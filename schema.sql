@@ -60,3 +60,13 @@ CREATE TABLE reviews (
     created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (task_id, reviewer_id)
 );
+
+-- Guild Chat Messages
+CREATE TABLE messages (
+    id         SERIAL PRIMARY KEY,
+    guild_id   INTEGER NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
+    content    TEXT NOT NULL CHECK (char_length(content) <= 1000),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX messages_guild_created ON messages (guild_id, created_at DESC);

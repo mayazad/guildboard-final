@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragOverlay,
@@ -129,6 +130,8 @@ const DroppableColumn = ({ col, tasks, onTaskClick }) => {
 };
 
 const Dashboard = () => {
+  const { guildData } = useOutletContext() || {};
+  const guildName = guildData?.guild?.name;
   const [tasks, setTasks] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -227,6 +230,7 @@ const Dashboard = () => {
             <Sword size={26} className="text-rpg-accent" /> Guild Quests
           </h1>
           <p className="text-gray-400 text-sm mt-1">
+            {guildName && <span className="text-rpg-gold font-semibold mr-1">⚔️ {guildName} ·</span>}
             {totalActive} active &middot; {totalDone} verified
           </p>
         </div>

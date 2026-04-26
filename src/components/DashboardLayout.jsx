@@ -2,12 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown } from 'lucide-react';
+import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 const XP_PER_LEVEL = 500;
 
 const DashboardLayout = () => {
   const [userData, setUserData]       = useState(null);
+  const [guildData, setGuildData]     = useState(null);
   const [loading, setLoading]         = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -23,6 +25,10 @@ const DashboardLayout = () => {
         const user = await res.json();
         if (!user.guild_id) { navigate('/guild-setup'); return; }
         setUserData(user);
+
+        // Fetch guild name
+        const guildRes = await fetch(`${API_URL}/api/guilds/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (guildRes.ok) setGuildData(await guildRes.json());
       } catch { navigate('/'); }
       finally { setLoading(false); }
     };
@@ -58,8 +64,18 @@ const DashboardLayout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-6">
           <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
             <Sword size={18} className="text-rpg-accent" />
-            <span className="text-base font-extrabold tracking-tight text-white hidden sm:block">Guild<span className="text-rpg-accent">Board</span></span>
+            <span className="text-base font-extrabold tracking-tight text-white hidden sm:block">
+              Guild<span className="text-rpg-accent">Board</span>
+            </span>
           </Link>
+
+          {/* Guild name pill */}
+          {guildData?.guild?.name && (
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/20">
+              ⚔️ {guildData.guild.name}
+            </span>
+          )}
+
           <div className="flex items-center gap-1">
             <Link to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
               <LayoutDashboard size={14} /> Board
@@ -99,7 +115,15 @@ const DashboardLayout = () => {
           )}
         </div>
       </nav>
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6"><Outlet /></main>
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+        <Outlet context={{ guildData, userData }} />
+      </main>
+
+      {/* Floating Guild Chat */}
+      {userData && (
+        <GuildChat currentUser={userData} guildName={guildData?.guild?.name} />
+      )}
     </div>
   );
 };
