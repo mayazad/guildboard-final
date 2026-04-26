@@ -34,7 +34,7 @@ const getAnalytics = async (req, res) => {
       WHERE u.guild_id = $1
       GROUP BY u.id, u.name
       ORDER BY early_count DESC
-    `, [guild_id, guild_id]);
+    `, [guild_id]);
 
     // XP Over Time — approximate from verified tasks in this guild
     const xpOverTime = await db.query(`
@@ -73,7 +73,7 @@ const getAnalytics = async (req, res) => {
       WHERE u.guild_id = $1
       GROUP BY u.id, u.name, u.role, u.total_xp, u.current_level
       ORDER BY u.total_xp DESC
-    `, [guild_id, guild_id]);
+    `, [guild_id]);
 
     res.json({
       leaderboards: {
