@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'rpg-bg':      'var(--rpg-bg)',
-        'rpg-panel':   'var(--rpg-panel)',
-        'rpg-accent':  'var(--rpg-accent)',
-        'rpg-gold':    'var(--rpg-gold)',
-        'rpg-danger':  'var(--rpg-danger)',
-        'rpg-success': 'var(--rpg-success)',
+        // Use RGB channel format so Tailwind opacity modifiers work (bg-rpg-accent/20 etc.)
+        'rpg-bg':      'rgb(var(--rpg-bg) / <alpha-value>)',
+        'rpg-panel':   'rgb(var(--rpg-panel) / <alpha-value>)',
+        'rpg-accent':  'rgb(var(--rpg-accent) / <alpha-value>)',
+        'rpg-gold':    'rgb(var(--rpg-gold) / <alpha-value>)',
+        'rpg-danger':  'rgb(var(--rpg-danger) / <alpha-value>)',
+        'rpg-success': 'rgb(var(--rpg-success) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

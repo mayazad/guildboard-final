@@ -2,43 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── RPG Theme (default) ─────────────────────────────────── */
+/* ── RPG Theme (default) ─────────────────────────────────────────
+   Variables are RGB channels (no #), required for Tailwind opacity
+   modifiers like bg-rpg-accent/20 to work correctly.
+   ────────────────────────────────────────────────────────────── */
 :root,
 [data-theme="rpg"] {
-  --rpg-bg:      #0f172a;
-  --rpg-panel:   #1e293b;
-  --rpg-accent:  #3b82f6;
-  --rpg-gold:    #fbbf24;
-  --rpg-danger:  #ef4444;
-  --rpg-success: #22c55e;
+  --rpg-bg:      15 23 42;      /* #0f172a */
+  --rpg-panel:   30 41 59;      /* #1e293b */
+  --rpg-accent:  59 130 246;    /* #3b82f6 blue */
+  --rpg-gold:    251 191 36;    /* #fbbf24 gold */
+  --rpg-danger:  239 68 68;     /* #ef4444 red */
+  --rpg-success: 34 197 94;     /* #22c55e green */
 }
 
-/* ── Black & White Theme ─────────────────────────────────── */
+/* ── Black & White Theme ─────────────────────────────────────────
+   Accent is light gray (not pure white) so buttons stay visible.
+   ────────────────────────────────────────────────────────────── */
 [data-theme="bw"] {
-  --rpg-bg:      #0a0a0a;
-  --rpg-panel:   #181818;
-  --rpg-accent:  #ffffff;
-  --rpg-gold:    #d1d5db;
-  --rpg-danger:  #9ca3af;
-  --rpg-success: #6b7280;
+  --rpg-bg:      10 10 10;      /* #0a0a0a near-black */
+  --rpg-panel:   26 26 26;      /* #1a1a1a dark gray */
+  --rpg-accent:  200 200 200;   /* #c8c8c8 light gray (NOT white) */
+  --rpg-gold:    150 150 150;   /* #969696 medium gray */
+  --rpg-danger:  120 120 120;   /* #787878 dark-medium gray */
+  --rpg-success: 100 100 100;   /* #646464 medium-dark gray */
 }
 
-/* ── Base styles ─────────────────────────────────────────── */
+/* ── Base styles ─────────────────────────────────────────────── */
 @layer base {
   body {
-    background-color: var(--rpg-bg);
+    background-color: rgb(var(--rpg-bg));
     @apply text-gray-100 font-sans antialiased;
     margin: 0;
     min-height: 100vh;
-  }
-
-  /* B&W theme: soften text to pure gray scale */
-  [data-theme="bw"] {
-    color-scheme: dark;
-  }
-
-  [data-theme="bw"] ::selection {
-    background: #ffffff33;
-    color: #fff;
+    transition: background-color 0.3s ease;
   }
 }
