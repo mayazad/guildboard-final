@@ -10,7 +10,7 @@ const formatTime = (ts) => {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const GuildChat = ({ currentUser, guildName }) => {
+const GuildChat = ({ currentUser, guildName, bottomClass = 'bottom-6' }) => {
   const [open, setOpen]         = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput]       = useState('');
@@ -74,7 +74,7 @@ const GuildChat = ({ currentUser, guildName }) => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] flex flex-col items-end gap-3">
+    <div className={`fixed right-6 z-[200] flex flex-col items-end gap-3 ${bottomClass}`}>
       {/* Chat Panel */}
       <AnimatePresence>
         {open && (

@@ -195,9 +195,7 @@ const DashboardLayout = () => {
 
       {/* ── Floating Guild Chat (above bottom nav on mobile) ─── */}
       {userData && (
-        <div className="fixed bottom-16 sm:bottom-6 right-4 sm:right-6 z-[70]">
-          <GuildChat currentUser={userData} guildName={guildData?.guild?.name} />
-        </div>
+        <GuildChat currentUser={userData} guildName={guildData?.guild?.name} bottomClass="bottom-20 sm:bottom-6" />
       )}
     </div>
   );

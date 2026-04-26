@@ -240,7 +240,7 @@ const Dashboard = () => {
           onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center gap-2 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-4 sm:py-2.5 sm:px-5 rounded-xl shadow-lg shadow-rpg-accent/20 transition-colors shrink-0"
         >
-          <Plus size={16} /> <span className="hidden xs:inline">New Quest</span><span className="sm:hidden inline xs:hidden">+</span>
+          <Plus size={16} /> New Quest
         </motion.button>
       </div>
 

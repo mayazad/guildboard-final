@@ -161,7 +161,8 @@ const LandingPage = () => {
       </section>
       <footer className="border-t border-gray-800 py-8 px-6 text-center text-gray-600 text-sm">
         <div className="flex items-center justify-center gap-2 mb-2"><Sword size={14} className="text-gray-700" /><span className="font-semibold text-gray-500">GuildBoard</span></div>
-        <p>Built for your dev guild. Every quest counts.</p>
+        <p className="mb-2">Built for your dev guild. Every quest counts.</p>
+        <p className="text-gray-700 text-xs">© {new Date().getFullYear()} <span className="text-gray-500 font-semibold">MayazAD</span>. All rights reserved.</p>
       </footer>
     </div>
   );
