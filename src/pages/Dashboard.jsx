@@ -130,7 +130,7 @@ const DroppableColumn = ({ col, tasks, onTaskClick }) => {
 };
 
 const Dashboard = () => {
-  const { guildData } = useOutletContext() || {};
+  const { guildData, userData } = useOutletContext() || {};
   const guildName = guildData?.guild?.name;
   const [tasks, setTasks] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -278,7 +278,13 @@ const Dashboard = () => {
         task={reviewTask}
         onReviewSubmitted={(data) => { fetchTasks(); if (data.awardedXp) window.location.reload(); }}
       />
-      <TaskDetailModal isOpen={!!detailTask} onClose={() => setDetailTask(null)} task={detailTask} />
+      <TaskDetailModal
+        isOpen={!!detailTask}
+        onClose={() => setDetailTask(null)}
+        task={detailTask}
+        currentUser={userData}
+        onStatusChanged={fetchTasks}
+      />
     </div>
   );
 };
