@@ -71,25 +71,37 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-rpg-bg flex flex-col">
       <nav className="bg-rpg-panel/90 backdrop-blur-md border-b border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-rpg-accent/20 flex items-center justify-center border border-rpg-accent/30">
-              <Sword size={18} className="text-rpg-accent" />
+          <div className="flex items-center gap-8">
+            <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-rpg-accent/20 flex items-center justify-center border border-rpg-accent/30">
+                <Sword size={18} className="text-rpg-accent" />
+              </div>
+              <span className="text-lg font-extrabold tracking-tight text-white hidden xs:block sm:block">
+                Guild<span className="text-rpg-accent">Board</span>
+              </span>
+            </Link>
+
+            {/* Desktop Navigation Links */}
+            <div className="hidden sm:flex items-center gap-1">
+              <Link to="/dashboard" className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all ${window.location.pathname === '/dashboard' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+                <LayoutDashboard size={16} /> Board
+              </Link>
+              <Link to="/analytics" className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all ${window.location.pathname === '/analytics' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+                <Trophy size={16} /> Hall of Fame
+              </Link>
             </div>
-            <span className="text-lg font-extrabold tracking-tight text-white hidden xs:block">
-              Guild<span className="text-rpg-accent">Board</span>
-            </span>
-          </Link>
+          </div>
 
           {/* Guild name pill - more integrated */}
           {guildData?.guild?.name && (
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/5 text-rpg-gold border border-white/10">
+            <div className="hidden lg:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/5 text-rpg-gold border border-white/10">
               ⚔️ {guildData.guild.name}
             </div>
           )}
 
           <div className="flex-1" />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Theme toggle - always visible icon */}
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -103,7 +115,7 @@ const DashboardLayout = () => {
               <div className="relative" ref={profileRef}>
                 <button onClick={() => setProfileOpen((p) => !p)} className="flex items-center gap-2 h-9 px-2 sm:px-3 rounded-xl bg-black/30 border border-gray-700 hover:border-gray-500 transition-colors">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rpg-accent/20 border border-rpg-accent/40 flex items-center justify-center text-[10px] font-bold text-rpg-accent">{userData.name?.charAt(0).toUpperCase()}</div>
-                  <span className="text-sm font-semibold text-gray-200 hidden sm:block">{userData.name}</span>
+                  <span className="text-sm font-semibold text-gray-200 hidden sm:block truncate max-w-[100px]">{userData.name}</span>
                   <ChevronDown size={14} className="text-gray-400" />
                 </button>
                 <AnimatePresence>
@@ -143,7 +155,9 @@ const DashboardLayout = () => {
 
       {/* Floating Guild Chat */}
       {userData && (
-        <GuildChat currentUser={userData} guildName={guildData?.guild?.name} className="bottom-20 sm:bottom-6" />
+        <div className="fixed bottom-20 sm:bottom-6 right-6 z-[70]">
+          <GuildChat currentUser={userData} guildName={guildData?.guild?.name} />
+        </div>
       )}
     </div>
   );
