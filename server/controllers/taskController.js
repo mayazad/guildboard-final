@@ -107,7 +107,21 @@ const createTask = async (req, res) => {
       [title, description, assigned_to, created_by, guild_id, deadline]
     );
 
-    res.status(201).json(result.rows[0]);
+    const newTask = result.rows[0];
+
+    // Fetch assignee name for the notification
+    const assigneeRes = await db.query('SELECT name FROM users WHERE id = $1', [assigned_to]);
+    const assigneeName = assigneeRes.rows[0]?.name || 'Unknown';
+
+    notifyDiscord({
+      title:       '⚔️ New Quest Assigned!',
+      description: `A new quest has been forged and assigned.\n\n**Quest:** ${newTask.title}${newTask.description ? `\n**Details:** ${newTask.description.slice(0, 120)}${newTask.description.length > 120 ? '…' : ''}` : ''}\n\n**Assigned to:** ${assigneeName}\n**Base XP:** +${newTask.base_xp}${deadline ? `\n**Deadline:** ${new Date(deadline).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`,
+      color:       0x3b82f6,
+      footer:      { text: 'GuildBoard · Quest Board' },
+      timestamp:   new Date().toISOString(),
+    });
+
+    res.status(201).json(newTask);
   } catch (error) {
     console.error('Error creating task:', error);
     res.status(500).json({ error: 'Internal server error' });
