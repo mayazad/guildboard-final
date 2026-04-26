@@ -287,6 +287,7 @@ const Dashboard = () => {
         task={detailTask}
         currentUser={userData}
         onStatusChanged={fetchTasks}
+        onDeleted={fetchTasks}
       />
     </div>
   );

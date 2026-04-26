@@ -232,4 +232,43 @@ const reviewTask = async (req, res) => {
   }
 };
 
-module.exports = { getTasks, updateTaskStatus, createTask, reviewTask };
+// ─── DELETE /api/tasks/:id ────────────────────────────────────────────────────
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id: user_id, guild_id, role } = req.user;
+
+    // Fetch the task first to check ownership & status
+    const taskRes = await db.query(
+      'SELECT * FROM tasks WHERE id = $1 AND guild_id = $2',
+      [id, guild_id]
+    );
+    if (taskRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Quest not found' });
+    }
+    const task = taskRes.rows[0];
+
+    // Permission check:
+    // - Leaders can delete ANY quest in their guild
+    // - Members can only delete quests they CREATED and that are still 'assigned'
+    if (role !== 'leader') {
+      if (task.created_by !== user_id) {
+        return res.status(403).json({ error: 'You can only delete quests you created' });
+      }
+      if (task.status !== 'assigned') {
+        return res.status(403).json({ error: 'You can only delete quests that have not been started yet' });
+      }
+    }
+
+    // Delete associated reviews first (FK constraint)
+    await db.query('DELETE FROM reviews WHERE task_id = $1', [id]);
+    await db.query('DELETE FROM tasks WHERE id = $1', [id]);
+
+    res.json({ message: 'Quest deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = { getTasks, updateTaskStatus, createTask, reviewTask, deleteTask };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Zap, Calendar, CheckCircle, Circle, RotateCcw, Shield, Play, Send } from 'lucide-react';
+import { X, User, Zap, Calendar, CheckCircle, Circle, RotateCcw, Shield, Play, Send, Trash2, AlertTriangle } from 'lucide-react';
 import DeadlineBadge from './DeadlineBadge';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -13,9 +13,11 @@ const STATUS_META = {
   verified:        { label: 'Verified',        color: 'text-green-400',   bg: 'bg-green-400/10',   icon: CheckCircle },
 };
 
-const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged, onDeleted }) => {
+  const [loading, setLoading]   = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [error, setError]       = useState('');
 
   if (!task) return null;
 
@@ -26,8 +28,7 @@ const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged }
   const isAssignee   = currentUser && task.assigned_to && Number(task.assigned_to) === Number(currentUser.id);
 
   const updateStatus = async (newStatus) => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const token = localStorage.getItem('token');
       const res   = await fetch(`${API_URL}/api/tasks/${task.id}/status`, {
@@ -39,12 +40,31 @@ const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged }
       if (!res.ok) throw new Error(data.error || 'Failed to update status');
       onStatusChanged?.();
       onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   };
+
+  const handleDelete = async () => {
+    setDeleting(true); setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const res   = await fetch(`${API_URL}/api/tasks/${task.id}`, {
+        method:  'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete quest');
+      onDeleted?.();
+      onClose();
+    } catch (err) { setError(err.message); setConfirmDelete(false); }
+    finally { setDeleting(false); }
+  };
+
+  // Can this user delete this quest?
+  const canDelete = currentUser && (
+    currentUser.role === 'leader' ||
+    (Number(task?.created_by) === Number(currentUser.id) && task?.status === 'assigned')
+  );
 
   return (
     <AnimatePresence>
@@ -149,6 +169,48 @@ const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged }
               <button onClick={onClose} className="w-full py-2.5 rounded-xl border border-gray-700 text-gray-400 hover:bg-white/5 hover:text-white text-sm font-medium transition-colors">
                 Close
               </button>
+
+              {/* Delete Quest */}
+              {canDelete && (
+                <div className="mt-1">
+                  {!confirmDelete ? (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full py-2.5 rounded-xl border border-red-900/40 text-red-400/70 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50 text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    >
+                      <Trash2 size={14} /> Delete Quest
+                    </button>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                      className="bg-red-500/10 border border-red-500/30 rounded-xl p-4"
+                    >
+                      <div className="flex items-center gap-2 text-red-400 font-bold text-sm mb-2">
+                        <AlertTriangle size={15} /> Are you sure?
+                      </div>
+                      <p className="text-gray-400 text-xs mb-3">
+                        This will permanently delete <span className="text-white font-semibold">&ldquo;{task.title}&rdquo;</span>. This cannot be undone.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="flex-1 py-2 rounded-lg border border-gray-700 text-gray-400 hover:text-white text-sm transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <motion.button
+                          whileTap={{ scale: 0.97 }}
+                          onClick={handleDelete}
+                          disabled={deleting}
+                          className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+                        >
+                          <Trash2 size={13} /> {deleting ? 'Deleting…' : 'Yes, Delete'}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
