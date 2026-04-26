@@ -4,7 +4,7 @@ import { X, Sparkles, Loader2, CheckSquare } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
+const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', deadline: '', assigned_to: '' });
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,10 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
-        if (data.length > 0) setFormData(prev => ({ ...prev, assigned_to: data[0].id }));
+        // Members can only self-assign; leaders can assign to anyone
+        const isMember = currentUser?.role === 'member';
+        const defaultId = isMember ? currentUser?.id : data[0]?.id;
+        if (defaultId) setFormData(prev => ({ ...prev, assigned_to: defaultId }));
       }
     } catch (err) { console.error('Failed to fetch users:', err); }
   };
@@ -114,10 +117,18 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Assignee</label>
-                  <select name="assigned_to" required value={formData.assigned_to} onChange={handleChange} className="w-full px-3 py-2 bg-black/30 border border-gray-600 rounded-lg focus:outline-none focus:border-rpg-accent text-white appearance-none">
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Assignee {currentUser?.role === 'member' && <span className="text-xs text-gray-500">(self-assign only)</span>}
+                  </label>
+                  {currentUser?.role === 'member' ? (
+                    <div className="w-full px-3 py-2 bg-black/20 border border-gray-700 rounded-lg text-gray-300 text-sm">
+                      {currentUser.name} <span className="text-xs text-rpg-accent">(you)</span>
+                    </div>
+                  ) : (
+                    <select name="assigned_to" required value={formData.assigned_to} onChange={handleChange} className="w-full px-3 py-2 bg-black/30 border border-gray-600 rounded-lg focus:outline-none focus:border-rpg-accent text-white appearance-none">
+                      {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Deadline</label>

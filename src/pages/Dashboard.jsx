@@ -259,7 +259,10 @@ const Dashboard = () => {
               col={col}
               tasks={tasks.filter(t => t.status === col.id || (col.id === 'in_review' && t.status === 'pending_council'))}
               onTaskClick={(task) => {
-                if (task.status === 'in_review' || task.status === 'pending_council') setReviewTask(task);
+                const isReviewable = task.status === 'in_review' || task.status === 'pending_council';
+                const isAssignee   = userData && Number(task.assigned_to) === Number(userData.id);
+                // Assignee sees their own task detail; everyone else sees review modal
+                if (isReviewable && !isAssignee) setReviewTask(task);
                 else setDetailTask(task);
               }}
             />
@@ -271,7 +274,7 @@ const Dashboard = () => {
         </DndContext>
       </div>
 
-      <CreateTaskModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onTaskCreated={fetchTasks} />
+      <CreateTaskModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onTaskCreated={fetchTasks} currentUser={userData} />
       <ReviewTaskModal
         isOpen={!!reviewTask}
         onClose={() => setReviewTask(null)}
