@@ -224,30 +224,53 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col gap-6 pt-4 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2 truncate">
-            <Sword size={22} className="text-rpg-accent shrink-0" /> Guild Quests
-          </h1>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            {guildName && (
-              <span className="text-[10px] sm:text-sm font-bold text-rpg-gold bg-rpg-gold/10 px-1.5 py-0.5 rounded border border-rpg-gold/20 truncate max-w-[120px] sm:max-w-none">
-                ⚔️ {guildName}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2 truncate">
+              <div className="w-8 h-8 rounded-lg bg-rpg-accent/20 flex items-center justify-center sm:hidden">
+                <Sword size={18} className="text-rpg-accent" />
+              </div>
+              Guild Board
+            </h1>
+            <div className="flex items-center gap-1.5 mt-1">
+              {guildName && (
+                <span className="text-[10px] sm:text-xs font-bold text-rpg-gold bg-rpg-gold/10 px-2 py-0.5 rounded-full border border-rpg-gold/20 truncate max-w-[120px] sm:max-w-none">
+                  ⚔️ {guildName}
+                </span>
+              )}
+              <span className="text-gray-500 text-[10px] sm:text-xs whitespace-nowrap hidden xs:inline">
+                &middot; {totalActive} active &middot; {totalDone} verified
               </span>
-            )}
-            <span className="text-gray-500 text-[10px] sm:text-sm whitespace-nowrap">
-              &middot; {totalActive} active &middot; {totalDone} verified
-            </span>
+            </div>
           </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-1.5 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-6 rounded-xl shadow-lg shadow-rpg-accent/20 transition-all shrink-0 text-xs sm:text-base border border-white/10"
+          >
+            <Plus size={16} /> <span>Quest</span>
+          </motion.button>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-1.5 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-6 rounded-xl shadow-lg shadow-rpg-accent/20 transition-all shrink-0 text-xs sm:text-base"
-        >
-          <Plus size={16} /> <span className="hidden xs:inline">New Quest</span><span className="xs:hidden">Quest</span>
-        </motion.button>
+
+        {/* Mobile Level Progress Bar */}
+        {userData && (
+          <div className="sm:hidden bg-rpg-panel/50 border border-white/5 rounded-2xl p-3">
+            <div className="flex justify-between items-end mb-1.5">
+              <span className="text-[10px] font-bold text-gray-400">LVL <span className="text-rpg-gold text-xs">{userData.current_level}</span></span>
+              <span className="text-[10px] font-bold text-gray-500">{userData.total_xp % 500} / 500 XP</span>
+            </div>
+            <div className="h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+              <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: `${((userData.total_xp % 500) / 500) * 100}%` }} 
+                transition={{ duration: 1, ease: 'easeOut' }} 
+                className="h-full bg-gradient-to-r from-rpg-accent to-rpg-gold" 
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Kanban Board */}

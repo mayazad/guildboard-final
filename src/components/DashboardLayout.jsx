@@ -70,81 +70,80 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-rpg-bg flex flex-col">
       <nav className="bg-rpg-panel/90 backdrop-blur-md border-b border-gray-700/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <Sword size={20} className="text-rpg-accent" />
+            <div className="w-8 h-8 rounded-lg bg-rpg-accent/20 flex items-center justify-center border border-rpg-accent/30">
+              <Sword size={18} className="text-rpg-accent" />
+            </div>
             <span className="text-lg font-extrabold tracking-tight text-white hidden xs:block">
               Guild<span className="text-rpg-accent">Board</span>
             </span>
           </Link>
 
-          {/* Guild name pill */}
+          {/* Guild name pill - more integrated */}
           {guildData?.guild?.name && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/20 max-w-[80px] sm:max-w-none truncate">
-              <span className="hidden xs:inline">⚔️</span> {guildData.guild.name}
-            </span>
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/5 text-rpg-gold border border-white/10">
+              ⚔️ {guildData.guild.name}
+            </div>
           )}
 
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all" title="Quest Board">
-              <LayoutDashboard size={18} />
-              <span className="hidden md:inline text-sm font-bold">Board</span>
-            </Link>
-            <Link to="/analytics" className="flex items-center gap-2 px-2 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all" title="Hall of Fame">
-              <Trophy size={18} />
-              <span className="hidden md:inline text-sm font-bold">Fame</span>
-            </Link>
-          </div>
           <div className="flex-1" />
 
-          {/* Theme toggle */}
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={toggleTheme}
-            title={theme === 'rpg' ? 'Switch to B&W' : 'Switch to RPG'}
-            className="flex items-center justify-center w-9 h-9 rounded-xl border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white transition-all bg-white/5 sm:bg-transparent"
-          >
-            <Palette size={18} />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* Theme toggle - always visible icon */}
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-xl bg-white/5 border border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+            >
+              <Palette size={18} />
+            </motion.button>
 
-          {userData && (
-            <div className="hidden md:flex items-center gap-3">
-              <span className="text-xs text-gray-400 font-semibold">LVL <span className="text-rpg-gold">{userData.current_level}</span></span>
-              <div className="w-32 h-1.5 bg-black/40 rounded-full overflow-hidden border border-gray-700">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${xpPct}%` }} transition={{ duration: 1, ease: 'easeOut' }} className="h-full bg-gradient-to-r from-rpg-accent to-rpg-gold" />
+            {userData && (
+              <div className="relative" ref={profileRef}>
+                <button onClick={() => setProfileOpen((p) => !p)} className="flex items-center gap-2 h-9 px-2 sm:px-3 rounded-xl bg-black/30 border border-gray-700 hover:border-gray-500 transition-colors">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rpg-accent/20 border border-rpg-accent/40 flex items-center justify-center text-[10px] font-bold text-rpg-accent">{userData.name?.charAt(0).toUpperCase()}</div>
+                  <span className="text-sm font-semibold text-gray-200 hidden sm:block">{userData.name}</span>
+                  <ChevronDown size={14} className="text-gray-400" />
+                </button>
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 w-44 bg-rpg-panel border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-[100]">
+                      <Link to="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"><User size={14} /> Profile</Link>
+                      <div className="border-t border-gray-700/50" />
+                      <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-rpg-danger hover:bg-rpg-danger/10 transition-colors"><LogOut size={14} /> Log Out</button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <span className="text-xs text-gray-500">{xpInLevel} / {XP_PER_LEVEL} XP</span>
-            </div>
-          )}
-          {userData && (
-            <div className="relative" ref={profileRef}>
-              <button onClick={() => setProfileOpen((p) => !p)} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/30 border border-gray-700 hover:border-gray-500 transition-colors">
-                <div className="w-7 h-7 rounded-lg bg-rpg-accent/20 border border-rpg-accent/40 flex items-center justify-center text-xs font-bold text-rpg-accent">{userData.name?.charAt(0).toUpperCase()}</div>
-                <span className="text-sm font-semibold text-gray-200 hidden sm:block">{userData.name}</span>
-                {userData.role && <span className={`text-xs px-1.5 py-0.5 rounded font-semibold hidden sm:block ${userData.role === 'leader' ? 'bg-rpg-gold/20 text-rpg-gold' : 'bg-rpg-accent/20 text-rpg-accent'}`}>{userData.role}</span>}
-                <ChevronDown size={14} className="text-gray-400" />
-              </button>
-              <AnimatePresence>
-                {profileOpen && (
-                  <motion.div initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-2 w-44 bg-rpg-panel border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-[100]">
-                    <Link to="/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"><User size={14} /> Profile</Link>
-                    <div className="border-t border-gray-700/50" />
-                    <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-rpg-danger hover:bg-rpg-danger/10 transition-colors"><LogOut size={14} /> Log Out</button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 mb-16 sm:mb-0">
         <Outlet context={{ guildData, userData }} />
       </main>
 
+      {/* Mobile Bottom Navigation */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-rpg-panel/95 backdrop-blur-lg border-t border-gray-700/50 flex justify-around items-center h-16 px-4 z-[60] safe-area-bottom">
+        <Link to="/dashboard" className={`flex flex-col items-center gap-1 transition-all ${window.location.pathname === '/dashboard' ? 'text-rpg-accent' : 'text-gray-500 hover:text-gray-300'}`}>
+          <LayoutDashboard size={20} />
+          <span className="text-[10px] font-bold">Board</span>
+        </Link>
+        <Link to="/analytics" className={`flex flex-col items-center gap-1 transition-all ${window.location.pathname === '/analytics' ? 'text-rpg-accent' : 'text-gray-500 hover:text-gray-300'}`}>
+          <Trophy size={20} />
+          <span className="text-[10px] font-bold">Fame</span>
+        </Link>
+        <Link to="/profile" className={`flex flex-col items-center gap-1 transition-all ${window.location.pathname === '/profile' ? 'text-rpg-accent' : 'text-gray-500 hover:text-gray-300'}`}>
+          <User size={20} />
+          <span className="text-[10px] font-bold">Profile</span>
+        </Link>
+      </div>
+
       {/* Floating Guild Chat */}
       {userData && (
-        <GuildChat currentUser={userData} guildName={guildData?.guild?.name} />
+        <GuildChat currentUser={userData} guildName={guildData?.guild?.name} className="bottom-20 sm:bottom-6" />
       )}
     </div>
   );
