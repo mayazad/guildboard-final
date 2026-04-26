@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Clock, Zap, Calendar, CheckCircle, Circle, RotateCcw, Shield, Play, Send } from 'lucide-react';
+import { X, User, Zap, Calendar, CheckCircle, Circle, RotateCcw, Shield, Play, Send } from 'lucide-react';
+import DeadlineBadge from './DeadlineBadge';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -89,12 +90,9 @@ const TaskDetailModal = ({ isOpen, onClose, task, currentUser, onStatusChanged }
                   {task.creator_role && <span className={`text-xs capitalize ${task.creator_role === 'leader' ? 'text-rpg-gold' : 'text-rpg-accent'}`}>{task.creator_role}</span>}
                 </div>
                 <div className="bg-black/30 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Clock size={11} /> Deadline</p>
+                  <p className="text-xs text-gray-500 mb-2 flex items-center gap-1.5"><Calendar size={11} /> Deadline</p>
                   {task.deadline
-                    ? <p className={`text-sm font-semibold ${isPastDeadline ? 'text-rpg-danger' : 'text-gray-200'}`}>
-                        {new Date(task.deadline).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        {isPastDeadline && <span className="ml-1 text-xs">(overdue)</span>}
-                      </p>
+                    ? <DeadlineBadge deadline={task.deadline} />
                     : <p className="text-sm text-gray-500">No deadline</p>}
                 </div>
                 <div className="bg-black/30 rounded-xl p-4">

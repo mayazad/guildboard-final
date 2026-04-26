@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown } from 'lucide-react';
+import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette } from 'lucide-react';
 import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -12,8 +12,17 @@ const DashboardLayout = () => {
   const [guildData, setGuildData]     = useState(null);
   const [loading, setLoading]         = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [theme, setTheme]             = useState(() => localStorage.getItem('guild-theme') || 'rpg');
   const profileRef = useRef(null);
   const navigate   = useNavigate();
+
+  // Apply theme on mount + change
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('guild-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'rpg' ? 'bw' : 'rpg');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -85,6 +94,18 @@ const DashboardLayout = () => {
             </Link>
           </div>
           <div className="flex-1" />
+
+          {/* Theme toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            onClick={toggleTheme}
+            title={theme === 'rpg' ? 'Switch to B&W' : 'Switch to RPG'}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white text-xs font-semibold transition-colors"
+          >
+            <Palette size={13} />
+            {theme === 'rpg' ? 'B&W' : 'RPG'}
+          </motion.button>
+
           {userData && (
             <div className="hidden md:flex items-center gap-3">
               <span className="text-xs text-gray-400 font-semibold">LVL <span className="text-rpg-gold">{userData.current_level}</span></span>

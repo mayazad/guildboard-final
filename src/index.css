@@ -2,10 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── RPG Theme (default) ─────────────────────────────────── */
+:root,
+[data-theme="rpg"] {
+  --rpg-bg:      #0f172a;
+  --rpg-panel:   #1e293b;
+  --rpg-accent:  #3b82f6;
+  --rpg-gold:    #fbbf24;
+  --rpg-danger:  #ef4444;
+  --rpg-success: #22c55e;
+}
+
+/* ── Black & White Theme ─────────────────────────────────── */
+[data-theme="bw"] {
+  --rpg-bg:      #0a0a0a;
+  --rpg-panel:   #181818;
+  --rpg-accent:  #ffffff;
+  --rpg-gold:    #d1d5db;
+  --rpg-danger:  #9ca3af;
+  --rpg-success: #6b7280;
+}
+
+/* ── Base styles ─────────────────────────────────────────── */
 @layer base {
   body {
-    @apply bg-rpg-bg text-gray-100 font-sans antialiased selection:bg-rpg-accent selection:text-white;
+    background-color: var(--rpg-bg);
+    @apply text-gray-100 font-sans antialiased;
     margin: 0;
     min-height: 100vh;
+  }
+
+  /* B&W theme: soften text to pure gray scale */
+  [data-theme="bw"] {
+    color-scheme: dark;
+  }
+
+  [data-theme="bw"] ::selection {
+    background: #ffffff33;
+    color: #fff;
   }
 }

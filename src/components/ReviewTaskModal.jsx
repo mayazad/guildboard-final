@@ -12,6 +12,10 @@ const ReviewTaskModal = ({ isOpen, onClose, task, onReviewSubmitted }) => {
 
   if (!task) return null;
 
+  const isCouncil = task.status === 'pending_council' ||
+    (task.status === 'in_review' && task.assignee_role === 'leader');
+  const approvals = Number(task.approval_count) || 0;
+
   const handleSubmit = async (approved) => {
     setError(''); setLoading(true);
     try {
@@ -41,7 +45,14 @@ const ReviewTaskModal = ({ isOpen, onClose, task, onReviewSubmitted }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="bg-rpg-panel border border-gray-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden relative">
             <div className="p-6 border-b border-gray-700/50 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">Council Review</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  {isCouncil ? '⚔️ Council Vote' : '🛡️ Quest Review'}
+                </h2>
+                {isCouncil
+                  ? <p className="text-xs text-rpg-gold mt-1">All members must approve this leader quest · {approvals} approval{approvals !== 1 ? 's' : ''} so far</p>
+                  : <p className="text-xs text-gray-400 mt-1">Score quality and approve or reject</p>}
+              </div>
               <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><X size={24} /></button>
             </div>
             <div className="p-6 space-y-6">

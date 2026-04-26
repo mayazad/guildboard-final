@@ -7,12 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'rpg-bg':      '#0f172a',
-        'rpg-panel':   '#1e293b',
-        'rpg-accent':  '#3b82f6',
-        'rpg-gold':    '#fbbf24',
-        'rpg-danger':  '#ef4444',
-        'rpg-success': '#22c55e',
+        'rpg-bg':      'var(--rpg-bg)',
+        'rpg-panel':   'var(--rpg-panel)',
+        'rpg-accent':  'var(--rpg-accent)',
+        'rpg-gold':    'var(--rpg-gold)',
+        'rpg-danger':  'var(--rpg-danger)',
+        'rpg-success': 'var(--rpg-success)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

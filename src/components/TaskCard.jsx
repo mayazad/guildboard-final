@@ -1,7 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
-import { Clock, User } from 'lucide-react';
+import { User } from 'lucide-react';
+import DeadlineBadge from './DeadlineBadge';
 
 const TaskCard = ({ task, onClick }) => {
   const {
@@ -42,18 +43,12 @@ const TaskCard = ({ task, onClick }) => {
           <p className="text-sm text-gray-400 mb-4 line-clamp-2">{task.description}</p>
         )}
 
-        <div className="flex items-center justify-between text-xs text-gray-400 mt-auto">
+        <div className="flex items-center justify-between text-xs text-gray-400 mt-auto flex-wrap gap-1">
           <div className="flex items-center gap-1">
             <User size={12} />
             <span className="truncate max-w-[100px]">{task.assignee_name || 'Unassigned'}</span>
           </div>
-          
-          {task.deadline && (
-            <div className={`flex items-center gap-1 ${new Date(task.deadline) < new Date() ? 'text-rpg-danger' : 'text-rpg-accent'}`}>
-              <Clock size={12} />
-              <span>{new Date(task.deadline).toLocaleDateString()}</span>
-            </div>
-          )}
+          {task.deadline && <DeadlineBadge deadline={task.deadline} />}
         </div>
         
         <div className="mt-3 flex items-center justify-between border-t border-gray-700/50 pt-2">

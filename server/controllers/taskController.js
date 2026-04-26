@@ -156,7 +156,8 @@ const reviewTask = async (req, res) => {
     // ── Dynamic Council Threshold ────────────────────────────────────────────
     // Leader tasks: all non-leader members in the guild must approve
     // Member tasks: only 1 approval needed (from the leader)
-    const requiresCouncil = task.assignee_role === 'leader' || task.creator_role === 'leader';
+    // Council only required when the ASSIGNEE is a leader (members vote on leader's work)
+    const requiresCouncil = task.assignee_role === 'leader';
 
     let requiredApprovals = 1;
     if (requiresCouncil) {
