@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Shield, Zap, CheckCircle, Star, Clock, Copy, Check, ArrowLeft, TrendingUp, Trophy } from 'lucide-react';
+import { User, Shield, Zap, CheckCircle, Star, Clock, Copy, Check, ArrowLeft, TrendingUp, Trophy, Users, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -14,23 +14,50 @@ const StatBox = ({ icon: Icon, value, label, color }) => (
   </div>
 );
 
+const RoleBadge = ({ role }) => {
+  if (role === 'leader') return (
+    <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-rpg-gold/15 text-rpg-gold border border-rpg-gold/30">
+      <Crown size={10} /> Leader
+    </span>
+  );
+  if (role === 'officer') return (
+    <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30">
+      <Shield size={10} /> Officer
+    </span>
+  );
+  return (
+    <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-rpg-accent/15 text-rpg-accent border border-rpg-accent/30">
+      <User size={10} /> Member
+    </span>
+  );
+};
+
 const ProfilePage = () => {
-  const [profile, setProfile]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [copied, setCopied]     = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied]   = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchAll = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res   = await fetch(`${API_URL}/api/users/profile`, { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Failed to load profile');
-        setProfile(await res.json());
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+        const headers = { Authorization: `Bearer ${token}` };
+        const [profileRes, membersRes] = await Promise.all([
+          fetch(`${API_URL}/api/users/profile`, { headers }),
+          fetch(`${API_URL}/api/users`, { headers }),
+        ]);
+        if (!profileRes.ok) throw new Error('Failed to load profile');
+        setProfile(await profileRes.json());
+        if (membersRes.ok) setMembers(await membersRes.json());
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchProfile();
+    fetchAll();
   }, []);
 
   const copyCode = () => {
@@ -40,11 +67,20 @@ const ProfilePage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) return <div className="flex-1 flex items-center justify-center text-gray-400"><motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }}>Loading profile...</motion.div></div>;
-  if (!profile) return <div className="flex-1 flex items-center justify-center text-rpg-danger">Failed to load profile.</div>;
+  if (loading) return (
+    <div className="flex-1 flex items-center justify-center text-gray-400">
+      <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+        Loading profile...
+      </motion.div>
+    </div>
+  );
 
-  const xpIntoLevel  = profile.total_xp % XP_PER_LEVEL;
-  const xpPct        = Math.min((xpIntoLevel / XP_PER_LEVEL) * 100, 100);
+  if (!profile) return (
+    <div className="flex-1 flex items-center justify-center text-rpg-danger">Failed to load profile.</div>
+  );
+
+  const xpIntoLevel   = profile.total_xp % XP_PER_LEVEL;
+  const xpPct         = Math.min((xpIntoLevel / XP_PER_LEVEL) * 100, 100);
   const xpToNextLevel = XP_PER_LEVEL - xpIntoLevel;
 
   return (
@@ -52,10 +88,14 @@ const ProfilePage = () => {
       <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm mb-6 transition-colors">
         <ArrowLeft size={16} /> Back to Board
       </button>
+
+      {/* Profile Card */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-rpg-panel border border-gray-700/50 rounded-2xl overflow-hidden mb-4">
         <div className="h-20 bg-gradient-to-r from-rpg-accent/30 to-rpg-gold/20 relative">
           <div className="absolute -bottom-8 left-6">
-            <div className="w-16 h-16 rounded-2xl bg-rpg-panel border-2 border-gray-700 flex items-center justify-center text-2xl font-extrabold text-white shadow-xl">{profile.name?.charAt(0).toUpperCase()}</div>
+            <div className="w-16 h-16 rounded-2xl bg-rpg-panel border-2 border-gray-700 flex items-center justify-center text-2xl font-extrabold text-white shadow-xl">
+              {profile.name?.charAt(0).toUpperCase()}
+            </div>
           </div>
         </div>
         <div className="pt-10 px-6 pb-6">
@@ -67,7 +107,8 @@ const ProfilePage = () => {
             <div className="flex items-center gap-2">
               {profile.role && (
                 <span className={`text-xs font-bold px-3 py-1 rounded-full border ${profile.role === 'leader' ? 'bg-rpg-gold/15 text-rpg-gold border-rpg-gold/30' : 'bg-rpg-accent/15 text-rpg-accent border-rpg-accent/30'}`}>
-                  <Shield size={10} className="inline mr-1" />{profile.role === 'leader' ? 'Guild Leader' : 'Member'}
+                  <Shield size={10} className="inline mr-1" />
+                  {profile.role === 'leader' ? 'Guild Leader' : 'Member'}
                 </span>
               )}
               {profile.rank && (
@@ -79,7 +120,9 @@ const ProfilePage = () => {
           </div>
           <div className="mt-5 p-4 bg-black/30 rounded-xl">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold text-gray-300 flex items-center gap-1.5"><TrendingUp size={14} className="text-rpg-gold" /> Level {profile.current_level}</span>
+              <span className="text-sm font-semibold text-gray-300 flex items-center gap-1.5">
+                <TrendingUp size={14} className="text-rpg-gold" /> Level {profile.current_level}
+              </span>
               <span className="text-xs text-gray-500">{xpIntoLevel} / {XP_PER_LEVEL} XP · {xpToNextLevel} to next level</span>
             </div>
             <div className="h-2 bg-black/50 rounded-full overflow-hidden border border-gray-700">
@@ -89,17 +132,23 @@ const ProfilePage = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Stat Boxes */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-        <StatBox icon={CheckCircle} value={profile.tasks_completed}   label="Quests Completed" color="#22c55e" />
-        <StatBox icon={Zap}         value={profile.tasks_active}      label="Active Quests"    color="#6366f1" />
-        <StatBox icon={Clock}       value={profile.early_completions} label="Early Finishes"   color="#f59e0b" />
-        <StatBox icon={Star}        value={profile.reviews_given}     label="Reviews Given"    color="#6366f1" />
-        <StatBox icon={Star}        value={profile.flawless_given}    label="Flawless Awards"  color="#f59e0b" />
-        <StatBox icon={TrendingUp}  value={`Lv. ${profile.current_level}`} label="Current Level" color="#22c55e" />
+        <StatBox icon={CheckCircle} value={profile.tasks_completed}        label="Quests Completed" color="#22c55e" />
+        <StatBox icon={Zap}         value={profile.tasks_active}           label="Active Quests"    color="#6366f1" />
+        <StatBox icon={Clock}       value={profile.early_completions}      label="Early Finishes"   color="#f59e0b" />
+        <StatBox icon={Star}        value={profile.reviews_given}          label="Reviews Given"    color="#6366f1" />
+        <StatBox icon={Star}        value={profile.flawless_given}         label="Flawless Awards"  color="#f59e0b" />
+        <StatBox icon={TrendingUp}  value={`Lv. ${profile.current_level}`} label="Current Level"   color="#22c55e" />
       </motion.div>
+
+      {/* Guild Info */}
       {profile.guild && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-rpg-panel border border-gray-700/50 rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Shield size={16} className="text-rpg-accent" /> Guild</h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-rpg-panel border border-gray-700/50 rounded-2xl p-6 mb-4">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Shield size={16} className="text-rpg-accent" /> Guild
+          </h2>
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-white font-semibold">{profile.guild.name}</p>
@@ -108,7 +157,9 @@ const ProfilePage = () => {
           </div>
           {profile.invite_code && (
             <div className="mt-4 p-4 bg-black/30 rounded-xl border border-rpg-gold/20">
-              <p className="text-xs text-rpg-gold font-semibold mb-2 flex items-center gap-1.5"><Star size={11} /> Your Guild Invite Code</p>
+              <p className="text-xs text-rpg-gold font-semibold mb-2 flex items-center gap-1.5">
+                <Star size={11} /> Your Guild Invite Code
+              </p>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-2xl font-mono font-extrabold tracking-[0.3em] text-white">{profile.invite_code}</span>
                 <button onClick={copyCode} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/30 hover:bg-rpg-gold/20 transition-colors">
@@ -118,6 +169,51 @@ const ProfilePage = () => {
               <p className="text-xs text-gray-500 mt-2">Share this code with teammates so they can join your guild.</p>
             </div>
           )}
+        </motion.div>
+      )}
+
+      {/* Guild Members List */}
+      {members.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-rpg-panel border border-gray-700/50 rounded-2xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Users size={16} className="text-rpg-accent" /> Guild Members
+            <span className="text-xs font-normal text-gray-500 ml-1">({members.length})</span>
+          </h2>
+          <div className="space-y-2">
+            {members.map((member, i) => (
+              <motion.div
+                key={member.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 + i * 0.05 }}
+                className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
+                  member.id === profile.id
+                    ? 'bg-rpg-accent/10 border-rpg-accent/30'
+                    : 'bg-black/20 border-gray-700/40 hover:border-gray-600/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-rpg-panel border border-gray-700 flex items-center justify-center text-sm font-bold text-white">
+                    {member.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white flex items-center gap-1.5">
+                      {member.name}
+                      {member.id === profile.id && <span className="text-xs text-gray-500">(you)</span>}
+                    </p>
+                    <p className="text-xs text-gray-500">@{member.username}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="text-right mr-2">
+                    <p className="text-xs font-semibold text-white">Lv. {member.current_level}</p>
+                    <p className="text-xs text-gray-500">{member.total_xp} XP</p>
+                  </div>
+                  <RoleBadge role={member.role} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       )}
     </div>
