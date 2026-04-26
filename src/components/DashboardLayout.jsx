@@ -72,25 +72,27 @@ const DashboardLayout = () => {
       <nav className="bg-rpg-panel/90 backdrop-blur-md border-b border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-6">
           <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <Sword size={18} className="text-rpg-accent" />
-            <span className="text-base font-extrabold tracking-tight text-white hidden sm:block">
+            <Sword size={20} className="text-rpg-accent" />
+            <span className="text-lg font-extrabold tracking-tight text-white hidden xs:block">
               Guild<span className="text-rpg-accent">Board</span>
             </span>
           </Link>
 
           {/* Guild name pill */}
           {guildData?.guild?.name && (
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/20">
-              ⚔️ {guildData.guild.name}
+            <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/20 max-w-[80px] sm:max-w-none truncate">
+              <span className="hidden xs:inline">⚔️</span> {guildData.guild.name}
             </span>
           )}
 
-          <div className="flex items-center gap-0.5">
-            <Link to="/dashboard" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-              <LayoutDashboard size={14} /> <span className="hidden sm:inline">Board</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link to="/dashboard" className="flex items-center gap-2 px-2 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all" title="Quest Board">
+              <LayoutDashboard size={18} />
+              <span className="hidden md:inline text-sm font-bold">Board</span>
             </Link>
-            <Link to="/analytics" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-              <Trophy size={14} /> <span className="sm:hidden">Fame</span><span className="hidden sm:inline">Hall of Fame</span>
+            <Link to="/analytics" className="flex items-center gap-2 px-2 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all" title="Hall of Fame">
+              <Trophy size={18} />
+              <span className="hidden md:inline text-sm font-bold">Fame</span>
             </Link>
           </div>
           <div className="flex-1" />
@@ -100,10 +102,9 @@ const DashboardLayout = () => {
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
             title={theme === 'rpg' ? 'Switch to B&W' : 'Switch to RPG'}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white text-xs font-semibold transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-xl border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white transition-all bg-white/5 sm:bg-transparent"
           >
-            <Palette size={13} />
-            {theme === 'rpg' ? 'B&W' : 'RPG'}
+            <Palette size={18} />
           </motion.button>
 
           {userData && (

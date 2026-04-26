@@ -224,23 +224,29 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col gap-6 pt-4 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
-            <Sword size={20} className="text-rpg-accent shrink-0" /> Guild Quests
+      <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2 truncate">
+            <Sword size={22} className="text-rpg-accent shrink-0" /> Guild Quests
           </h1>
-          <p className="text-gray-400 text-xs sm:text-sm mt-1">
-            {guildName && <span className="text-rpg-gold font-semibold mr-1">⚔️ {guildName} ·</span>}
-            {totalActive} active &middot; {totalDone} verified
-          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {guildName && (
+              <span className="text-[10px] sm:text-sm font-bold text-rpg-gold bg-rpg-gold/10 px-1.5 py-0.5 rounded border border-rpg-gold/20 truncate max-w-[120px] sm:max-w-none">
+                ⚔️ {guildName}
+              </span>
+            )}
+            <span className="text-gray-500 text-[10px] sm:text-sm whitespace-nowrap">
+              &middot; {totalActive} active &middot; {totalDone} verified
+            </span>
+          </div>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-1.5 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-5 rounded-xl shadow-lg shadow-rpg-accent/20 transition-colors shrink-0 text-sm sm:text-base"
+          className="flex items-center gap-1.5 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-6 rounded-xl shadow-lg shadow-rpg-accent/20 transition-all shrink-0 text-xs sm:text-base"
         >
-          <Plus size={15} /> <span className="hidden sm:inline">New Quest</span><span className="sm:hidden">Quest</span>
+          <Plus size={16} /> <span className="hidden xs:inline">New Quest</span><span className="xs:hidden">Quest</span>
         </motion.button>
       </div>
 
