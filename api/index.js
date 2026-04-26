@@ -9,12 +9,12 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Routes
-const authRoutes      = require('./routes/authRoutes');
-const userRoutes      = require('./routes/userRoutes');
-const taskRoutes      = require('./routes/taskRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
-const aiRoutes        = require('./routes/aiRoutes');
-const guildsRoutes    = require('./routes/guildsRoutes');
+const authRoutes      = require('../server/routes/authRoutes');
+const userRoutes      = require('../server/routes/userRoutes');
+const taskRoutes      = require('../server/routes/taskRoutes');
+const analyticsRoutes = require('../server/routes/analyticsRoutes');
+const aiRoutes        = require('../server/routes/aiRoutes');
+const guildsRoutes    = require('../server/routes/guildsRoutes');
 
 app.use('/api/auth',      authRoutes);
 app.use('/api/users',     userRoutes);
@@ -27,8 +27,4 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'GuildBoard API is running on Vercel' });
 });
 
-// For local dev, uncomment app.listen
-// app.listen(5001, () => console.log('Server running on 5001'));
-
-// For Vercel, export the app
 module.exports = app;
