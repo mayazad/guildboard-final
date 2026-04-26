@@ -71,13 +71,13 @@ const EmptyState = ({ col }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center py-10 px-4 text-center"
+      className="flex flex-col items-center justify-center py-5 sm:py-10 px-4 text-center"
     >
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 opacity-30" style={{ background: `${col.color}22` }}>
-        <Icon size={22} style={{ color: col.color }} />
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2 sm:mb-3 opacity-30" style={{ background: `${col.color}22` }}>
+        <Icon size={20} style={{ color: col.color }} />
       </div>
-      <p className="text-sm font-medium text-gray-500">{col.emptyMsg}</p>
-      <p className="text-xs text-gray-600 mt-1">{col.emptyHint}</p>
+      <p className="text-xs sm:text-sm font-medium text-gray-500">{col.emptyMsg}</p>
+      <p className="text-xs text-gray-600 mt-0.5 hidden sm:block">{col.emptyHint}</p>
     </motion.div>
   );
 };
@@ -106,7 +106,7 @@ const DroppableColumn = ({ col, tasks, onTaskClick }) => {
       {/* Tasks area */}
       <div
         ref={setNodeRef}
-        className={`flex-1 p-3 overflow-y-auto space-y-3 min-h-[200px] transition-colors duration-200 ${isOver ? 'bg-white/5' : ''}`}
+        className={`flex-1 p-2 sm:p-3 overflow-y-auto space-y-2 sm:space-y-3 min-h-[120px] sm:min-h-[200px] transition-colors duration-200 ${isOver ? 'bg-white/5' : ''}`}
       >
         <SortableContext items={tasks.map(t => t.id.toString())} strategy={verticalListSortingStrategy}>
           <AnimatePresence>
@@ -224,12 +224,12 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col gap-6 pt-4 pb-8">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-            <Sword size={26} className="text-rpg-accent" /> Guild Quests
+          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
+            <Sword size={20} className="text-rpg-accent shrink-0" /> Guild Quests
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-gray-400 text-xs sm:text-sm mt-1">
             {guildName && <span className="text-rpg-gold font-semibold mr-1">⚔️ {guildName} ·</span>}
             {totalActive} active &middot; {totalDone} verified
           </p>
@@ -238,9 +238,9 @@ const Dashboard = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-rpg-accent/20 transition-colors shrink-0"
+          className="flex items-center gap-1.5 bg-rpg-accent hover:bg-rpg-accent/80 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-5 rounded-xl shadow-lg shadow-rpg-accent/20 transition-colors shrink-0 text-sm sm:text-base"
         >
-          <Plus size={16} /> New Quest
+          <Plus size={15} /> <span className="hidden sm:inline">New Quest</span><span className="sm:hidden">Quest</span>
         </motion.button>
       </div>
 

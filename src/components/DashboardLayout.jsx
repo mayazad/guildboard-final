@@ -85,12 +85,12 @@ const DashboardLayout = () => {
             </span>
           )}
 
-          <div className="flex items-center gap-1">
-            <Link to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-              <LayoutDashboard size={14} /> Board
+          <div className="flex items-center gap-0.5">
+            <Link to="/dashboard" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+              <LayoutDashboard size={14} /> <span className="hidden sm:inline">Board</span>
             </Link>
-            <Link to="/analytics" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
-              <Trophy size={14} /> Hall of Fame
+            <Link to="/analytics" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors">
+              <Trophy size={14} /> <span className="sm:hidden">Fame</span><span className="hidden sm:inline">Hall of Fame</span>
             </Link>
           </div>
           <div className="flex-1" />
