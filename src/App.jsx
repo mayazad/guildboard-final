@@ -5,6 +5,7 @@ import DashboardLayout    from './components/DashboardLayout';
 import Dashboard          from './pages/Dashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ProfilePage        from './pages/ProfilePage';
+import QuestLogPage       from './pages/QuestLogPage';
 
 function App() {
   return (
@@ -16,9 +17,10 @@ function App() {
 
         {/* Protected — wrapped in DashboardLayout (handles auth + guild guard) */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics" element={<AnalyticsDashboard />} />
-          <Route path="/profile"   element={<ProfilePage />} />
+          <Route path="/dashboard"  element={<Dashboard />} />
+          <Route path="/analytics"  element={<AnalyticsDashboard />} />
+          <Route path="/profile"    element={<ProfilePage />} />
+          <Route path="/quest-log"  element={<QuestLogPage />} />
         </Route>
       </Routes>
     </Router>

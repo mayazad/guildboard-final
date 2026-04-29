@@ -63,10 +63,13 @@ We will replace the dry history list with an immersive, animated journey path.
 2.  **Activity Logging**: Update `taskController.js` to automatically log actions.
 3.  **History API**: Create an endpoint that returns the full journey of a task sorted by time.
 
-### Phase 2: Frontend (The Journey UI)
-1.  **Tabbed Modal**: Update `TaskDetailModal.jsx` with a modern tab switcher.
-2.  **Journey Tab**: Build the `QuestJourney` component with Framer Motion.
-3.  **Journal Tab**: Build the `TaskNotes` component with auto-save functionality.
+### Phase 2: Frontend (The UI Evolution)
+1.  **Quest Log Page [NEW]**: Create a main navigation page that lists:
+    - **Global Chronicles**: A feed of all activities in the guild (who finished what).
+    - **Personal Journal**: A collection of all notes you've written, categorized by quest.
+2.  **Layout Update**: Add the "Quest Log" icon (Book icon) to the top navbar and mobile bottom navbar.
+3.  **Tabbed Modal**: Update `TaskDetailModal.jsx` with the modern tab switcher (keeping the local view as well).
+4.  **Journey & Notes Components**: Ensure these components are reusable so they work both in the popup and on the full Quest Log page.
 
 ---
 

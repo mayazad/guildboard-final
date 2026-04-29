@@ -17,6 +17,8 @@ const aiRoutes        = require('../server/routes/aiRoutes');
 const guildsRoutes    = require('../server/routes/guildsRoutes');
 const messageRoutes   = require('../server/routes/messageRoutes');
 
+const questLogRoutes  = require('../server/routes/questLogRoutes');
+
 app.use('/api/auth',      authRoutes);
 app.use('/api/users',     userRoutes);
 app.use('/api/guilds',    guildsRoutes);
@@ -24,6 +26,7 @@ app.use('/api/tasks',     aiRoutes);
 app.use('/api/tasks',     taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/messages',  messageRoutes);
+app.use('/api/quest-log', questLogRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'GuildBoard API is running on Vercel' });

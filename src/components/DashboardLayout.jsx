@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette } from 'lucide-react';
+import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen } from 'lucide-react';
 import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -103,6 +103,12 @@ const DashboardLayout = () => {
             >
               <Trophy size={14} /> Hall of Fame
             </Link>
+            <Link
+              to="/quest-log"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/quest-log') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <BookOpen size={14} /> Quest Log
+            </Link>
           </div>
 
           <div className="flex-1" />
@@ -179,17 +185,24 @@ const DashboardLayout = () => {
       <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-rpg-panel/95 backdrop-blur-lg border-t border-gray-700/60 flex justify-around items-center h-14 z-[60]">
         <Link
           to="/dashboard"
-          className={`flex flex-col items-center gap-0.5 px-6 py-1 transition-all ${isActive('/dashboard') ? 'text-rpg-accent' : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-0.5 px-4 py-1 transition-all ${isActive('/dashboard') ? 'text-rpg-accent' : 'text-gray-500'}`}
         >
           <LayoutDashboard size={20} />
           <span className="text-[10px] font-bold">Board</span>
         </Link>
         <Link
           to="/analytics"
-          className={`flex flex-col items-center gap-0.5 px-6 py-1 transition-all ${isActive('/analytics') ? 'text-rpg-accent' : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-0.5 px-4 py-1 transition-all ${isActive('/analytics') ? 'text-rpg-accent' : 'text-gray-500'}`}
         >
           <Trophy size={20} />
           <span className="text-[10px] font-bold">Fame</span>
+        </Link>
+        <Link
+          to="/quest-log"
+          className={`flex flex-col items-center gap-0.5 px-4 py-1 transition-all ${isActive('/quest-log') ? 'text-rpg-accent' : 'text-gray-500'}`}
+        >
+          <BookOpen size={20} />
+          <span className="text-[10px] font-bold">Log</span>
         </Link>
       </div>
 
