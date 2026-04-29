@@ -12,6 +12,18 @@ const notifyDiscord = async (embed) => {
   }
 };
 
+// Activity logging helper — fire-and-forget, never breaks main flow
+const logActivity = async (task_id, user_id, action_type, details) => {
+  try {
+    await db.query(
+      'INSERT INTO task_activities (task_id, user_id, action_type, details) VALUES ($1, $2, $3, $4)',
+      [task_id, user_id, action_type, details]
+    );
+  } catch (e) {
+    console.error('[Activity Log] Failed:', e.message);
+  }
+};
+
 // ─── GET /api/tasks ───────────────────────────────────────────────────────────
 const getTasks = async (req, res) => {
   try {
@@ -42,9 +54,9 @@ const getTasks = async (req, res) => {
 // ─── PUT /api/tasks/:id/status ────────────────────────────────────────────────
 const updateTaskStatus = async (req, res) => {
   try {
-    const { id }    = req.params;
+    const { id }     = req.params;
     const { status } = req.body;
-    const { guild_id } = req.user;
+    const { id: user_id, guild_id } = req.user;
 
     if (!['assigned', 'in_progress', 'pending_council', 'in_review', 'verified'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
@@ -61,6 +73,23 @@ const updateTaskStatus = async (req, res) => {
     }
 
     const updatedTask = result.rows[0];
+
+    // Log activity for the status transition
+    const activityMap = {
+      in_progress:     'started',
+      in_review:       'submitted',
+      pending_council: 'pending_council',
+      verified:        'verified',
+      assigned:        'returned',
+    };
+    const detailsMap = {
+      in_progress:     'Adventure begun — quest is now In Progress',
+      in_review:       'Submitted to the Council for review',
+      pending_council: 'Awaiting full council vote',
+      verified:        'Quest verified — XP awarded!',
+      assigned:        'Quest returned to Assigned',
+    };
+    await logActivity(id, user_id, activityMap[status] || status, detailsMap[status] || `Status changed to ${status}`);
 
     if (status === 'in_review' || status === 'pending_council') {
       const isCouncil = status === 'pending_council';
@@ -113,6 +142,9 @@ const createTask = async (req, res) => {
     const assigneeRes = await db.query('SELECT name FROM users WHERE id = $1', [assigned_to]);
     const assigneeName = assigneeRes.rows[0]?.name || 'Unknown';
 
+    // Log creation activity
+    await logActivity(newTask.id, created_by, 'created', `Quest forged and assigned to ${assigneeName}`);
+
     notifyDiscord({
       title:       '⚔️ New Quest Assigned!',
       description: `A new quest has been forged and assigned.\n\n**Quest:** ${newTask.title}${newTask.description ? `\n**Details:** ${newTask.description.slice(0, 120)}${newTask.description.length > 120 ? '…' : ''}` : ''}\n\n**Assigned to:** ${assigneeName}\n**Base XP:** +${newTask.base_xp}${deadline ? `\n**Deadline:** ${new Date(deadline).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`,
@@ -153,6 +185,7 @@ const reviewTask = async (req, res) => {
         `UPDATE tasks SET status = 'in_progress', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
         [id]
       );
+      await logActivity(id, reviewer_id, 'rejected', 'Council rejected — quest returned to the forge');
       return res.json({ message: 'Task rejected and returned to In Progress', task: updatedTask.rows[0] });
     }
 
@@ -191,6 +224,7 @@ const reviewTask = async (req, res) => {
     if (approvals.length < requiredApprovals) {
       if (requiresCouncil && approvals.length >= 1) {
         await db.query(`UPDATE tasks SET status = 'pending_council' WHERE id = $1`, [id]);
+        await logActivity(id, reviewer_id, 'pending_council', `${approvals.length} approval(s) received — awaiting full council vote`);
       }
       return res.json({
         message:  `Review recorded. Awaiting more approvals (${approvals.length}/${requiredApprovals}).`,
@@ -224,6 +258,9 @@ const reviewTask = async (req, res) => {
       `UPDATE tasks SET status = 'verified', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
       [id]
     );
+
+    // Log verification with XP details
+    await logActivity(id, reviewer_id, 'verified', `Legend verified! +${finalXp} XP awarded to ${task.assigned_to}`);
 
     res.json({ message: 'Task verified and XP awarded!', task: updatedTask.rows[0], awardedXp: finalXp, newTotalXp, newLevel });
   } catch (error) {
