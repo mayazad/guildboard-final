@@ -180,9 +180,11 @@ const streamChat = async (req, res) => {
       `SELECT title, status FROM tasks WHERE guild_id = $1 AND status IN ('assigned', 'in_progress', 'in_review', 'pending_council') LIMIT 10`,
       [guild_id]
     );
-    const activeTasks = tasksRes.rows.map(t => `- ${t.title} (${t.status})`).join('\n');
+    const activeTasks = tasksRes.rows.length > 0 
+      ? tasksRes.rows.map(t => `- ${t.title} (${t.status})`).join('\n')
+      : 'NONE';
 
-    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown (*, #, \`\`\`, etc). Keep it conversational and brief.\n\nActive Quests:\n${activeTasks || 'No active quests.'}\n\nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
+    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown. Keep it conversational and brief.\n\nActive Quests: ${activeTasks}\nIMPORTANT: If Active Quests is NONE, you MUST strictly tell the guild that there are no quests available right now!\n\nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
 
     const payload = {
       model: 'officialmayazad/sensei-mayaz-v1',
@@ -223,11 +225,21 @@ const streamChat = async (req, res) => {
     response.data.on('end', async () => {
       // Save DM's final message to the database synchronously BEFORE ending the stream
       try {
+        let dmId;
         const dmRes = await db.query("SELECT id FROM users WHERE username = 'dungeon_master'");
         if (dmRes.rows.length > 0) {
+          dmId = dmRes.rows[0].id;
+        } else {
+          const insertRes = await db.query(
+            "INSERT INTO users (username, password_hash, name, role) VALUES ('dungeon_master', 'system_account', 'Dungeon Master', 'leader') RETURNING id"
+          );
+          dmId = insertRes.rows[0].id;
+        }
+
+        if (dmId) {
           await db.query(
             'INSERT INTO messages (guild_id, user_id, content) VALUES ($1, $2, $3)',
-            [guild_id, dmRes.rows[0].id, fullResponse.substring(0, 1000)]
+            [guild_id, dmId, fullResponse.substring(0, 1000)]
           );
         }
       } catch (err) {
