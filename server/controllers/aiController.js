@@ -184,7 +184,7 @@ const streamChat = async (req, res) => {
       ? tasksRes.rows.map(t => `- ${t.title} (${t.status})`).join('\n')
       : 'NONE';
 
-    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown. Keep it conversational and brief.\n\nActive Quests: ${activeTasks}\nIMPORTANT: If Active Quests is NONE, you MUST strictly tell the guild that there are no quests available right now!\n\nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
+    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown. Keep it conversational and brief.\n\nActive Quests: ${activeTasks}\n\nRecent Chat Log:\n${pastMessages}\n\nIf the guild asks about quests and Active Quests is NONE, tell them the board is empty. Otherwise, answer their question normally.\nProvide the next response.`;
 
     const payload = {
       model: 'officialmayazad/sensei-mayaz-v1',
@@ -223,6 +223,17 @@ const streamChat = async (req, res) => {
     });
 
     response.data.on('end', async () => {
+      // Process any remaining data in the buffer
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer);
+          if (parsed.message?.content) {
+            fullResponse += parsed.message.content;
+            res.write(`data: ${JSON.stringify({ content: parsed.message.content })}\n\n`);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
       // Save DM's final message to the database synchronously BEFORE ending the stream
       try {
         let dmId;
