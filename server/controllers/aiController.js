@@ -176,7 +176,13 @@ const streamChat = async (req, res) => {
     );
     const pastMessages = pastMessagesRes.rows.reverse().map(m => `${m.name}: ${m.content}`).join('\n');
 
-    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
+    const tasksRes = await db.query(
+      `SELECT title, status FROM tasks WHERE guild_id = $1 AND status IN ('assigned', 'in_progress', 'in_review', 'pending_council') LIMIT 10`,
+      [guild_id]
+    );
+    const activeTasks = tasksRes.rows.map(t => `- ${t.title} (${t.status})`).join('\n');
+
+    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown (*, #, \`\`\`, etc). Keep it conversational and brief.\n\nActive Quests:\n${activeTasks || 'No active quests.'}\n\nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
 
     const payload = {
       model: 'officialmayazad/sensei-mayaz-v1',
@@ -210,10 +216,7 @@ const streamChat = async (req, res) => {
     });
 
     response.data.on('end', async () => {
-      res.write('data: [DONE]\n\n');
-      res.end();
-      
-      // Save DM's final message to the database silently
+      // Save DM's final message to the database synchronously BEFORE ending the stream
       try {
         const dmRes = await db.query("SELECT id FROM users WHERE username = 'dungeon_master'");
         if (dmRes.rows.length > 0) {
@@ -225,6 +228,9 @@ const streamChat = async (req, res) => {
       } catch (err) {
         console.error('Failed to save DM message:', err);
       }
+
+      res.write('data: [DONE]\n\n');
+      res.end(); // Finally close the stream and let Vercel freeze the container
     });
 
     response.data.on('error', (err) => {
