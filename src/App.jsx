@@ -7,6 +7,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ProfilePage        from './pages/ProfilePage';
 import QuestLogPage       from './pages/QuestLogPage';
 import NotebookPage       from './components/NotebookPage';
+import TodoPage           from './components/TodoPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/profile"    element={<ProfilePage />} />
           <Route path="/quest-log"  element={<QuestLogPage />} />
           <Route path="/notebook"   element={<NotebookPage />} />
+          <Route path="/todos"      element={<TodoPage />} />
         </Route>
       </Routes>
     </Router>

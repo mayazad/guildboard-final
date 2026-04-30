@@ -20,6 +20,7 @@ const messageRoutes   = require('../server/routes/messageRoutes');
 
 const questLogRoutes      = require('../server/routes/questLogRoutes');
 const personalNotesRoutes = require('../server/routes/personalNotesRoutes');
+const todoRoutes          = require('../server/routes/todoRoutes');
 
 app.use('/api/auth',      authRoutes);
 app.use('/api/users',     userRoutes);
@@ -31,6 +32,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/messages',  messageRoutes);
 app.use('/api/quest-log', questLogRoutes);
 app.use('/api/notes',     personalNotesRoutes);
+app.use('/api/todos',     todoRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'GuildBoard API is running on Vercel' });

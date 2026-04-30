@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen, ScrollText } from 'lucide-react';
+import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen, ScrollText, CheckSquare } from 'lucide-react';
 import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -114,6 +114,12 @@ const DashboardLayout = () => {
             >
               <ScrollText size={13} /> Notebook
             </Link>
+            <Link
+              to="/todos"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/todos') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <CheckSquare size={13} /> Tasks
+            </Link>
           </div>
 
           <div className="flex-1" />
@@ -211,10 +217,17 @@ const DashboardLayout = () => {
         </Link>
         <Link
           to="/notebook"
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-all ${isActive('/notebook') ? 'text-rpg-accent' : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-0.5 px-2.5 py-1 transition-all ${isActive('/notebook') ? 'text-rpg-accent' : 'text-gray-500'}`}
         >
-          <ScrollText size={20} />
+          <ScrollText size={18} />
           <span className="text-[10px] font-bold">Notes</span>
+        </Link>
+        <Link
+          to="/todos"
+          className={`flex flex-col items-center gap-0.5 px-2.5 py-1 transition-all ${isActive('/todos') ? 'text-rpg-accent' : 'text-gray-500'}`}
+        >
+          <CheckSquare size={18} />
+          <span className="text-[10px] font-bold">Tasks</span>
         </Link>
       </div>
 
