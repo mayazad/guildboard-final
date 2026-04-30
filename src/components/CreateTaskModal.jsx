@@ -10,6 +10,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiLoadingText, setAiLoadingText] = useState('');
   const [aiError, setAiError] = useState('');
   const [subquests, setSubquests] = useState([]);
 
@@ -53,6 +54,12 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
   const handleGenerateSubquests = async () => {
     if (!formData.title.trim()) { setAiError('Please enter a quest title first.'); return; }
     setAiError(''); setAiLoading(true); setSubquests([]);
+    setAiLoadingText('Summoning the Dungeon Master...');
+
+    const timeoutId = setTimeout(() => {
+      setAiLoadingText('Waking the Dungeon Master from a deep slumber... this may take a moment!');
+    }, 10000);
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/tasks/generate-subquests`, {
@@ -64,7 +71,11 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
       if (!res.ok) throw new Error(data.error || 'AI generation failed');
       setSubquests(data.subquests || []);
     } catch (err) { setAiError(err.message); }
-    finally { setAiLoading(false); }
+    finally {
+      clearTimeout(timeoutId);
+      setAiLoading(false);
+      setAiLoadingText('');
+    }
   };
 
   const handleUseSubquests = () => {
@@ -87,8 +98,10 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-sm font-medium text-gray-300">Quest Title</label>
                   <button type="button" onClick={handleGenerateSubquests} disabled={aiLoading} className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rpg-gold/15 text-rpg-gold hover:bg-rpg-gold/25 border border-rpg-gold/30 transition-colors disabled:opacity-50">
-                    {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    {aiLoading ? 'Generating...' : '✨ Auto-Generate Sub-Quests'}
+                    {aiLoading ? <Loader2 size={12} className="animate-spin shrink-0" /> : <Sparkles size={12} className="shrink-0" />}
+                    <span className="truncate max-w-[300px]">
+                      {aiLoading ? aiLoadingText : '✨ Auto-Generate Sub-Quests'}
+                    </span>
                   </button>
                 </div>
                 <input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full px-3 py-2 bg-black/30 border border-gray-600 rounded-lg focus:outline-none focus:border-rpg-accent text-white" placeholder="Defeat the Dragon..." />
