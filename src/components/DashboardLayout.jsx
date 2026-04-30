@@ -89,31 +89,30 @@ const DashboardLayout = () => {
             </span>
           )}
 
-          {/* Desktop nav links — hidden on mobile (bottom nav handles it) */}
-          <div className="hidden sm:flex items-center gap-0.5">
+          <div className="hidden sm:flex items-center gap-0">
             <Link
               to="/dashboard"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/dashboard') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/dashboard') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
-              <LayoutDashboard size={14} /> Board
+              <LayoutDashboard size={13} /> Board
             </Link>
             <Link
               to="/analytics"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/analytics') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/analytics') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
-              <Trophy size={14} /> Hall of Fame
+              <Trophy size={13} /> Fame
             </Link>
             <Link
               to="/quest-log"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/quest-log') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/quest-log') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
-              <BookOpen size={14} /> Quest Log
+              <BookOpen size={13} /> Quest Log
             </Link>
             <Link
               to="/notebook"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/notebook') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/notebook') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
-              <ScrollText size={14} /> Notebook
+              <ScrollText size={13} /> Notebook
             </Link>
           </div>
 
