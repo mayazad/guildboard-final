@@ -198,7 +198,8 @@ Output:`;
       stream: true,
       messages: [{ role: 'user', content: promptContext }],
       options: {
-        stop: ["Input:", "Instruction:", "Output:"]
+        stop: ["Input:", "Instruction:", "Output:"],
+        num_predict: 200
       }
     };
 
