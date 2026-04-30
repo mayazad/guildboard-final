@@ -184,7 +184,20 @@ const streamChat = async (req, res) => {
       ? tasksRes.rows.map(t => `- ${t.title} (${t.status})`).join('\n')
       : 'NONE';
 
-    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nOutput PLAIN TEXT ONLY. Do NOT use markdown. Keep it conversational and brief.\n\nActive Quests: ${activeTasks}\n\nRecent Chat Log:\n${pastMessages}\n\nIf the guild asks about quests and Active Quests is NONE, tell them the board is empty. Otherwise, answer their question normally.\nProvide the next response.`;
+    const promptContext = `Instruction: INTERACTIVE_PROMPT
+Input: STRICT ROLEPLAY INSTRUCTIONS:
+You are the Dungeon Master of the guild. Output PLAIN TEXT ONLY. Do NOT use markdown. Keep it brief.
+
+1. FOR GUILD BUSINESS (Quests, Tasks): Answer strictly using the Active Quests below. Do not invent quests that are not listed. If the board is empty, inform the guild.
+2. FOR CASUAL CHAT (Greetings, Weather, "How are you?"): You are allowed to answer! Respond in-character as a gritty, busy Dungeon Master. Briefly indulge their question, but immediately and firmly redirect them back to focusing on the Guild's tasks.
+
+Active Quests:
+${activeTasks}
+
+Recent Chat Log:
+${pastMessages}
+
+Provide the next response.`;
 
     const payload = {
       model: 'officialmayazad/sensei-mayaz-v1',
