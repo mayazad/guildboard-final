@@ -6,6 +6,7 @@ import Dashboard          from './pages/Dashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import ProfilePage        from './pages/ProfilePage';
 import QuestLogPage       from './pages/QuestLogPage';
+import NotebookPage       from './components/NotebookPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/analytics"  element={<AnalyticsDashboard />} />
           <Route path="/profile"    element={<ProfilePage />} />
           <Route path="/quest-log"  element={<QuestLogPage />} />
+          <Route path="/notebook"   element={<NotebookPage />} />
         </Route>
       </Routes>
     </Router>

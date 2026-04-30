@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen } from 'lucide-react';
+import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen, ScrollText } from 'lucide-react';
 import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -109,6 +109,12 @@ const DashboardLayout = () => {
             >
               <BookOpen size={14} /> Quest Log
             </Link>
+            <Link
+              to="/notebook"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${isActive('/notebook') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <ScrollText size={14} /> Notebook
+            </Link>
           </div>
 
           <div className="flex-1" />
@@ -199,10 +205,17 @@ const DashboardLayout = () => {
         </Link>
         <Link
           to="/quest-log"
-          className={`flex flex-col items-center gap-0.5 px-4 py-1 transition-all ${isActive('/quest-log') ? 'text-rpg-accent' : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-all ${isActive('/quest-log') ? 'text-rpg-accent' : 'text-gray-500'}`}
         >
           <BookOpen size={20} />
           <span className="text-[10px] font-bold">Log</span>
+        </Link>
+        <Link
+          to="/notebook"
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-all ${isActive('/notebook') ? 'text-rpg-accent' : 'text-gray-500'}`}
+        >
+          <ScrollText size={20} />
+          <span className="text-[10px] font-bold">Notes</span>
         </Link>
       </div>
 
