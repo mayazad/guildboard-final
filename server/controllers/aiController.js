@@ -204,7 +204,10 @@ Output:`;
     const payload = {
       model: 'officialmayazad/sensei-mayaz-v1',
       stream: true,
-      messages: [{ role: 'user', content: promptContext }]
+      messages: [{ role: 'user', content: promptContext }],
+      options: {
+        stop: ["Input:", "Instruction:", "Output:"]
+      }
     };
 
     const response = await axios({
