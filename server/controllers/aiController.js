@@ -234,6 +234,12 @@ const streamChat = async (req, res) => {
         } catch (e) { /* ignore */ }
       }
 
+      // If the fine-tuned model collapsed and returned nothing, inject a fallback response
+      if (!fullResponse.trim()) {
+        fullResponse = "The Dungeon Master stares at you in silence. (I only know about quests and tasks right now!)";
+        res.write(`data: ${JSON.stringify({ content: fullResponse })}\n\n`);
+      }
+
       // Save DM's final message to the database synchronously BEFORE ending the stream
       try {
         let dmId;
