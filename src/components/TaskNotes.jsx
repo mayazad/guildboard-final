@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PenLine, Check, Loader2 } from 'lucide-react';
+import { PenLine, Check, Loader2, Eye, Edit3 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -14,6 +16,7 @@ const TaskNotes = ({ task }) => {
   const [savedAt, setSavedAt]   = useState(null);
   const [saving, setSaving]     = useState(false);
   const [loading, setLoading]   = useState(true);
+  const [mode, setMode]         = useState('edit'); // 'edit' or 'preview'
   const debounceRef = useRef(null);
 
   // Load existing note on mount
@@ -76,10 +79,33 @@ const TaskNotes = ({ task }) => {
     <div className="flex flex-col gap-3">
       {/* Status bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-          <PenLine size={12} />
-          <span>Adventurer's Journal</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <PenLine size={12} />
+            <span>Adventurer's Journal</span>
+          </div>
+
+          {/* Toggle Button */}
+          <div className="flex bg-black/40 rounded-lg p-0.5 border border-gray-700/50">
+            <button
+              onClick={() => setMode('edit')}
+              className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${
+                mode === 'edit' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Edit3 size={12} /> Edit
+            </button>
+            <button
+              onClick={() => setMode('preview')}
+              className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${
+                mode === 'preview' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              <Eye size={12} /> Preview
+            </button>
+          </div>
         </div>
+
         <AnimatePresence mode="wait">
           {saving ? (
             <motion.span key="saving"
@@ -99,13 +125,30 @@ const TaskNotes = ({ task }) => {
         </AnimatePresence>
       </div>
 
-      {/* Journal textarea */}
-      <textarea
-        value={content}
-        onChange={handleChange}
-        placeholder={`Record your journey here...\n\nWrite your findings, technical notes, and discoveries as you progress through this quest.`}
-        className="w-full h-52 bg-black/30 border border-gray-700/80 rounded-xl p-4 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-rpg-accent/60 transition-colors resize-none leading-relaxed font-mono"
-      />
+      {/* Editor / Preview Area */}
+      {mode === 'edit' ? (
+        <textarea
+          value={content}
+          onChange={handleChange}
+          placeholder={`Record your journey here...\n\nUse Markdown for formatting:\n# Header\n**Bold Text**\n- List Item\n\n\`\`\`javascript\nconst magic = true;\n\`\`\``}
+          className="w-full h-64 bg-black/30 border border-gray-700/80 rounded-xl p-4 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-rpg-accent/60 transition-colors resize-y leading-relaxed font-mono"
+        />
+      ) : (
+        <div className="w-full min-h-64 h-auto max-h-96 overflow-y-auto bg-black/20 border border-gray-700/50 rounded-xl p-4">
+          {content.trim() ? (
+            <ReactMarkdown 
+              className="prose prose-invert prose-sm max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-gray-700/50 prose-a:text-rpg-accent prose-headings:text-gray-100 prose-strong:text-gray-200"
+              remarkPlugins={[remarkGfm]}
+            >
+              {content}
+            </ReactMarkdown>
+          ) : (
+            <div className="h-full flex items-center justify-center text-sm text-gray-600 italic">
+              Nothing written yet. Switch to Edit mode to begin your record.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Hint */}
       <p className="text-[10px] text-gray-700 text-center">
