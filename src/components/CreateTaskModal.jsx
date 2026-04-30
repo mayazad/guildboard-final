@@ -6,11 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
   const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({ title: '', description: '', deadline: '', assigned_to: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', deadline: '', assigned_to: '', base_xp: 100 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiLoadingText, setAiLoadingText] = useState('');
+  const [xpLoading, setXpLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [subquests, setSubquests] = useState([]);
   const [originalAiSubquests, setOriginalAiSubquests] = useState([]);
@@ -64,7 +65,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
       }
 
       onTaskCreated(data); onClose();
-      setFormData({ title: '', description: '', deadline: '', assigned_to: users[0]?.id || '' });
+      setFormData({ title: '', description: '', deadline: '', assigned_to: users[0]?.id || '', base_xp: 100 });
       setSubquests([]); setOriginalAiSubquests([]); setAiError('');
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
@@ -96,6 +97,23 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
       setAiLoading(false);
       setAiLoadingText('');
     }
+  };
+
+  const handleSuggestXP = async () => {
+    if (!formData.title.trim()) { setAiError('Please enter a quest title first to evaluate XP.'); return; }
+    setAiError(''); setXpLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/tasks/suggest-xp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title: formData.title, description: formData.description }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to auto-balance XP');
+      setFormData(prev => ({ ...prev, base_xp: data.xp }));
+    } catch (err) { setAiError(err.message); }
+    finally { setXpLoading(false); }
   };
 
   const handleUseSubquests = () => {
@@ -148,6 +166,18 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
                 <textarea name="description" rows="3" value={formData.description} onChange={handleChange} className="w-full px-3 py-2 bg-black/30 border border-gray-600 rounded-lg focus:outline-none focus:border-rpg-accent text-white resize-none" placeholder="Details of the epic journey..." />
               </div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm font-medium text-gray-300">Base XP Reward</label>
+                  <button type="button" onClick={handleSuggestXP} disabled={xpLoading} className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rpg-accent/15 text-rpg-accent hover:bg-rpg-accent/25 border border-rpg-accent/30 transition-colors disabled:opacity-50">
+                    {xpLoading ? <Loader2 size={12} className="animate-spin shrink-0" /> : <Sparkles size={12} className="shrink-0" />}
+                    {xpLoading ? 'Balancing...' : '⚖️ Auto-Balance XP'}
+                  </button>
+                </div>
+                <input type="number" name="base_xp" min="10" max="2000" required value={formData.base_xp} onChange={handleChange} className="w-full px-3 py-2 bg-black/30 border border-gray-600 rounded-lg focus:outline-none focus:border-rpg-accent text-white" />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
