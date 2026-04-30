@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen, ScrollText, CheckSquare } from 'lucide-react';
+import { Sword, Trophy, LayoutDashboard, User, LogOut, ChevronDown, Palette, BookOpen, ScrollText } from 'lucide-react';
 import GuildChat from './GuildChat';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -82,45 +82,41 @@ const DashboardLayout = () => {
             </span>
           </Link>
 
-          {/* Guild name pill — hidden on mobile, shown on desktop */}
-          {guildData?.guild?.name && (
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rpg-gold/10 text-rpg-gold border border-rpg-gold/20 shrink-0">
-              ⚔️ {guildData.guild.name}
-            </span>
-          )}
 
-          <div className="hidden sm:flex items-center gap-0">
-            <Link
-              to="/dashboard"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/dashboard') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              <LayoutDashboard size={13} /> Board
-            </Link>
-            <Link
-              to="/analytics"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/analytics') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              <Trophy size={13} /> Fame
-            </Link>
-            <Link
-              to="/quest-log"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/quest-log') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              <BookOpen size={13} /> Quest Log
-            </Link>
-            <Link
-              to="/notebook"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/notebook') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              <ScrollText size={13} /> Notebook
-            </Link>
-            <Link
-              to="/todos"
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${isActive('/todos') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              <CheckSquare size={13} /> Tasks
-            </Link>
-          </div>
+          {/* ── Desktop Nav with sliding pill ─────────────────────── */}
+          {(() => {
+            const NAV = [
+              { to: '/dashboard', icon: LayoutDashboard, label: 'Board'      },
+              { to: '/analytics', icon: Trophy,          label: 'Hall of Fame'},
+              { to: '/quest-log', icon: BookOpen,        label: 'Quest Log'  },
+              { to: '/notebook',  icon: ScrollText,      label: 'Notebook'   },
+            ];
+            const activeIdx = NAV.findIndex(n => n.to === location.pathname);
+            return (
+              <div className="hidden sm:flex items-center relative bg-black/30 rounded-xl border border-gray-800 p-1 gap-0">
+                {/* Sliding background pill */}
+                {activeIdx >= 0 && (
+                  <motion.div
+                    className="absolute top-1 bottom-1 rounded-lg bg-white/10 border border-white/10"
+                    layoutId="nav-active-pill"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    style={{ left: `calc(${activeIdx} * (100% / ${NAV.length}) + 4px)`, width: `calc(100% / ${NAV.length} - 8px)` }}
+                  />
+                )}
+                {NAV.map(({ to, icon: Icon, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg ${
+                      isActive(to) ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    <Icon size={14} /> {label}
+                  </Link>
+                ))}
+              </div>
+            );
+          })()}
 
           <div className="flex-1" />
 
@@ -217,17 +213,10 @@ const DashboardLayout = () => {
         </Link>
         <Link
           to="/notebook"
-          className={`flex flex-col items-center gap-0.5 px-2.5 py-1 transition-all ${isActive('/notebook') ? 'text-rpg-accent' : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-all ${isActive('/notebook') ? 'text-rpg-accent' : 'text-gray-500'}`}
         >
-          <ScrollText size={18} />
-          <span className="text-[10px] font-bold">Notes</span>
-        </Link>
-        <Link
-          to="/todos"
-          className={`flex flex-col items-center gap-0.5 px-2.5 py-1 transition-all ${isActive('/todos') ? 'text-rpg-accent' : 'text-gray-500'}`}
-        >
-          <CheckSquare size={18} />
-          <span className="text-[10px] font-bold">Tasks</span>
+          <ScrollText size={20} />
+          <span className="text-[10px] font-bold">Notebook</span>
         </Link>
       </div>
 

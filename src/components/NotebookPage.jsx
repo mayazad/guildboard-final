@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ScrollText, Plus, Edit3, Eye, Trash2, Loader2, Check,
-  ChevronRight, User, FileText, X,
+  ChevronRight, User, FileText, X, CheckSquare,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import TodoPage from './TodoPage';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -50,6 +51,7 @@ const NoteListItem = ({ note, isActive, isOwn, onClick }) => (
 
 // ─── Main NotebookPage ─────────────────────────────────────────────────────────
 const NotebookPage = () => {
+  const [tab, setTab]               = useState('notes'); // 'notes' | 'tasks'
   const [notes, setNotes]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [activeId, setActiveId]     = useState(null);
@@ -174,200 +176,183 @@ const NotebookPage = () => {
   const otherNotes = notes.filter((n) => !me || n.user_id !== me?.id);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 h-[calc(100vh-8rem)]">
+    <div className="flex flex-col gap-4 h-[calc(100vh-8rem)]">
 
-      {/* ── Sidebar ───────────────────────────────────────────────────────── */}
-      <div className="w-full sm:w-72 shrink-0 flex flex-col gap-3 overflow-hidden">
-
-        {/* Header + New button */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-gray-300">
-            <ScrollText size={16} className="text-rpg-accent" />
-            <span className="font-bold text-sm">Guild Notebook</span>
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={() => setCreating(true)}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-rpg-accent/20 hover:bg-rpg-accent/30 text-rpg-accent border border-rpg-accent/30 rounded-lg text-xs font-semibold transition-colors"
-          >
-            <Plus size={12} /> New Note
-          </motion.button>
-        </div>
-
-        {/* New note title input */}
-        <AnimatePresence>
-          {creating && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className="flex gap-2"
-            >
-              <input
-                autoFocus
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
-                placeholder="Note title…"
-                className="flex-1 bg-black/40 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-rpg-accent/60"
-              />
-              <button onClick={handleCreate} className="px-2 py-2 bg-rpg-accent/20 text-rpg-accent rounded-lg hover:bg-rpg-accent/30 transition-colors">
-                <Check size={14} />
-              </button>
-              <button onClick={() => { setCreating(false); setNewTitle(''); }} className="px-2 py-2 text-gray-500 hover:text-gray-300 rounded-lg transition-colors">
-                <X size={14} />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Notes list */}
-        <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 size={20} className="animate-spin text-gray-500" />
-            </div>
-          ) : notes.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText size={32} className="text-gray-700 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">No notes yet.</p>
-              <p className="text-xs text-gray-700 mt-1">Click "New Note" to start writing!</p>
-            </div>
-          ) : (
-            <>
-              {myNotes.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1 mb-1.5">My Notes</p>
-                  <div className="flex flex-col gap-1">
-                    {myNotes.map((n) => (
-                      <NoteListItem key={n.id} note={n} isActive={n.id === activeId} isOwn onClick={() => selectNote(n.id)} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {otherNotes.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1 mb-1.5">Guild Members</p>
-                  <div className="flex flex-col gap-1">
-                    {otherNotes.map((n) => (
-                      <NoteListItem key={n.id} note={n} isActive={n.id === activeId} isOwn={false} onClick={() => selectNote(n.id)} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      {/* ── Tab Bar ───────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-1 bg-black/30 border border-gray-800 rounded-2xl p-1.5 self-start relative">
+        {/* Sliding pill */}
+        <motion.div
+          layout
+          layoutId="notebook-tab-pill"
+          className="absolute h-[calc(100%-12px)] rounded-xl bg-gray-700/80 border border-gray-600/50"
+          style={{
+            left: tab === 'notes' ? '6px' : '50%',
+            width: 'calc(50% - 6px)',
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+        />
+        <button
+          onClick={() => setTab('notes')}
+          className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === 'notes' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+        >
+          <ScrollText size={14} /> Notes
+        </button>
+        <button
+          onClick={() => setTab('tasks')}
+          className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === 'tasks' ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+        >
+          <CheckSquare size={14} /> Tasks
+        </button>
       </div>
 
-      {/* ── Editor / Viewer ───────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col bg-rpg-panel/40 border border-gray-700/50 rounded-2xl overflow-hidden">
-        {!activeNote ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-600">
-            <ScrollText size={40} className="text-gray-700" />
-            <p className="text-sm">Select a note from the sidebar or create a new one.</p>
-          </div>
+      {/* ── Tab Content ───────────────────────────────────────────────────── */}
+      <AnimatePresence mode="wait">
+        {tab === 'tasks' ? (
+          <motion.div key="tasks"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="flex-1 overflow-y-auto"
+          >
+            <TodoPage />
+          </motion.div>
         ) : (
-          <>
-            {/* Note topbar */}
-            <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-700/50 shrink-0">
-              {/* Author chip */}
-              <div className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-lg ${authorColor(activeNote.user_id)}`}>
-                <User size={11} />
-                {activeNote.author_name}
-                {isOwn && <span className="opacity-60">(you)</span>}
-              </div>
-
-              {/* Edit/Preview toggle — only for your own notes */}
-              {isOwn && (
-                <div className="flex bg-black/40 rounded-lg p-0.5 border border-gray-700/50">
-                  <button
-                    onClick={() => setMode('edit')}
-                    className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${mode === 'edit' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                  >
-                    <Edit3 size={11} /> Edit
-                  </button>
-                  <button
-                    onClick={() => setMode('preview')}
-                    className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${mode === 'preview' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                  >
-                    <Eye size={11} /> Preview
-                  </button>
+          <motion.div key="notes"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col sm:flex-row gap-4 flex-1 overflow-hidden"
+          >
+            {/* ── Sidebar ─────────────────────────────────────────────────── */}
+            <div className="w-full sm:w-72 shrink-0 flex flex-col gap-3 overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <ScrollText size={16} className="text-rpg-accent" />
+                  <span className="font-bold text-sm">Guild Notebook</span>
                 </div>
-              )}
-
-              <div className="flex-1" />
-
-              {/* Save indicator */}
-              <AnimatePresence mode="wait">
-                {saving ? (
-                  <motion.span key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="text-xs text-rpg-accent flex items-center gap-1">
-                    <Loader2 size={10} className="animate-spin" /> Saving…
-                  </motion.span>
-                ) : savedAt ? (
-                  <motion.span key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="text-xs text-gray-600 flex items-center gap-1">
-                    <Check size={10} className="text-green-400" /> Saved
-                  </motion.span>
-                ) : null}
-              </AnimatePresence>
-
-              {/* Delete (own notes only) */}
-              {isOwn && (
                 <motion.button
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rpg-danger border border-rpg-danger/30 rounded-lg hover:bg-rpg-danger/10 transition-colors"
+                  onClick={() => setCreating(true)}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-rpg-accent/20 hover:bg-rpg-accent/30 text-rpg-accent border border-rpg-accent/30 rounded-lg text-xs font-semibold transition-colors"
                 >
-                  {deleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
-                  Delete
+                  <Plus size={12} /> New Note
                 </motion.button>
-              )}
+              </div>
+
+              <AnimatePresence>
+                {creating && (
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="flex gap-2">
+                    <input autoFocus value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
+                      placeholder="Note title…"
+                      className="flex-1 bg-black/40 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-rpg-accent/60"
+                    />
+                    <button onClick={handleCreate} className="px-2 py-2 bg-rpg-accent/20 text-rpg-accent rounded-lg hover:bg-rpg-accent/30 transition-colors"><Check size={14} /></button>
+                    <button onClick={() => { setCreating(false); setNewTitle(''); }} className="px-2 py-2 text-gray-500 hover:text-gray-300 rounded-lg transition-colors"><X size={14} /></button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+                {loading ? (
+                  <div className="flex items-center justify-center py-12"><Loader2 size={20} className="animate-spin text-gray-500" /></div>
+                ) : notes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText size={32} className="text-gray-700 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">No notes yet.</p>
+                    <p className="text-xs text-gray-700 mt-1">Click "New Note" to start writing!</p>
+                  </div>
+                ) : (
+                  <>
+                    {myNotes.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1 mb-1.5">My Notes</p>
+                        <div className="flex flex-col gap-1">
+                          {myNotes.map((n) => <NoteListItem key={n.id} note={n} isActive={n.id === activeId} isOwn onClick={() => selectNote(n.id)} />)}
+                        </div>
+                      </div>
+                    )}
+                    {otherNotes.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest px-1 mb-1.5">Guild Members</p>
+                        <div className="flex flex-col gap-1">
+                          {otherNotes.map((n) => <NoteListItem key={n.id} note={n} isActive={n.id === activeId} isOwn={false} onClick={() => selectNote(n.id)} />)}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Title */}
-            <div className="px-5 pt-4 pb-2 shrink-0 border-b border-gray-700/30">
-              {isOwn && mode === 'edit' ? (
-                <input
-                  value={activeNote.title}
-                  onChange={handleTitleChange}
-                  placeholder="Note title…"
-                  className="w-full text-xl font-bold text-gray-100 bg-transparent border-none outline-none placeholder-gray-600"
-                />
-              ) : (
-                <h1 className="text-xl font-bold text-gray-100">{activeNote.title || 'Untitled'}</h1>
-              )}
-            </div>
-
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-              {isOwn && mode === 'edit' ? (
-                <textarea
-                  value={activeNote.content}
-                  onChange={handleContentChange}
-                  placeholder={`Write your notes here in Markdown...\n\n# Header\n**Bold text**\n- List item\n\`\`\`code\`\`\``}
-                  className="w-full h-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm text-gray-200 placeholder-gray-600 leading-relaxed font-mono"
-                />
-              ) : (
-                <div>
-                  {activeNote.content?.trim() ? (
-                    <ReactMarkdown
-                      className="prose prose-invert prose-sm max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-gray-700/50 prose-a:text-rpg-accent prose-headings:text-gray-100 prose-strong:text-gray-200"
-                      remarkPlugins={[remarkGfm]}
-                    >
-                      {activeNote.content}
-                    </ReactMarkdown>
-                  ) : (
-                    <p className="text-sm text-gray-600 italic">This note is empty.</p>
-                  )}
+            {/* ── Editor / Viewer ─────────────────────────────────────────── */}
+            <div className="flex-1 flex flex-col bg-rpg-panel/40 border border-gray-700/50 rounded-2xl overflow-hidden">
+              {!activeNote ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-600">
+                  <ScrollText size={40} className="text-gray-700" />
+                  <p className="text-sm">Select a note from the sidebar or create a new one.</p>
                 </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-700/50 shrink-0">
+                    <div className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-lg ${authorColor(activeNote.user_id)}`}>
+                      <User size={11} />{activeNote.author_name}
+                      {isOwn && <span className="opacity-60">(you)</span>}
+                    </div>
+                    {isOwn && (
+                      <div className="flex bg-black/40 rounded-lg p-0.5 border border-gray-700/50">
+                        <button onClick={() => setMode('edit')} className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${mode === 'edit' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}><Edit3 size={11} /> Edit</button>
+                        <button onClick={() => setMode('preview')} className={`flex items-center gap-1 px-3 py-1 text-xs rounded-md transition-all ${mode === 'preview' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}><Eye size={11} /> Preview</button>
+                      </div>
+                    )}
+                    <div className="flex-1" />
+                    <AnimatePresence mode="wait">
+                      {saving ? (
+                        <motion.span key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-rpg-accent flex items-center gap-1"><Loader2 size={10} className="animate-spin" /> Saving…</motion.span>
+                      ) : savedAt ? (
+                        <motion.span key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-gray-600 flex items-center gap-1"><Check size={10} className="text-green-400" /> Saved</motion.span>
+                      ) : null}
+                    </AnimatePresence>
+                    {isOwn && (
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleDelete} disabled={deleting}
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rpg-danger border border-rpg-danger/30 rounded-lg hover:bg-rpg-danger/10 transition-colors">
+                        {deleting ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />} Delete
+                      </motion.button>
+                    )}
+                  </div>
+                  <div className="px-5 pt-4 pb-2 shrink-0 border-b border-gray-700/30">
+                    {isOwn && mode === 'edit' ? (
+                      <input value={activeNote.title} onChange={handleTitleChange} placeholder="Note title…"
+                        className="w-full text-xl font-bold text-gray-100 bg-transparent border-none outline-none placeholder-gray-600" />
+                    ) : (
+                      <h1 className="text-xl font-bold text-gray-100">{activeNote.title || 'Untitled'}</h1>
+                    )}
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-5 py-4">
+                    {isOwn && mode === 'edit' ? (
+                      <textarea value={activeNote.content} onChange={handleContentChange}
+                        placeholder={`Write your notes here in Markdown...\n\n# Header\n**Bold text**\n- List item\n\`\`\`code\`\`\``}
+                        className="w-full h-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm text-gray-200 placeholder-gray-600 leading-relaxed font-mono" />
+                    ) : (
+                      <div>
+                        {activeNote.content?.trim() ? (
+                          <ReactMarkdown className="prose prose-invert prose-sm max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-gray-700/50 prose-a:text-rpg-accent prose-headings:text-gray-100 prose-strong:text-gray-200" remarkPlugins={[remarkGfm]}>
+                            {activeNote.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <p className="text-sm text-gray-600 italic">This note is empty.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
-          </>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };
 
 export default NotebookPage;
+
+
