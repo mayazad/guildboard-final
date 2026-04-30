@@ -13,6 +13,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
   const [aiLoadingText, setAiLoadingText] = useState('');
   const [aiError, setAiError] = useState('');
   const [subquests, setSubquests] = useState([]);
+  const [originalAiSubquests, setOriginalAiSubquests] = useState([]);
 
   useEffect(() => { if (isOpen) fetchUsers(); }, [isOpen]);
 
@@ -44,9 +45,27 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create task');
+      
+      // Log AI feedback if the user edited the generated subquests
+      if (originalAiSubquests.length > 0 && formData.description) {
+        const originalDescription = originalAiSubquests.map((s, i) => `${i + 1}. ${s}`).join('\n');
+        if (formData.description !== originalDescription) {
+          fetch(`${API_URL}/api/ai/logs/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              instruction_type: 'STRUCTURAL_OUTPUT',
+              prompt_input: `Break down this task into 3-5 actionable sub-tasks. Output a raw JSON array of strings only. Title: "${formData.title.trim()}"`,
+              ai_output: JSON.stringify(originalAiSubquests),
+              user_corrected_output: formData.description
+            })
+          }).catch(err => console.error('Feedback log failed:', err));
+        }
+      }
+
       onTaskCreated(data); onClose();
       setFormData({ title: '', description: '', deadline: '', assigned_to: users[0]?.id || '' });
-      setSubquests([]); setAiError('');
+      setSubquests([]); setOriginalAiSubquests([]); setAiError('');
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -70,6 +89,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated, currentUser }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'AI generation failed');
       setSubquests(data.subquests || []);
+      setOriginalAiSubquests(data.subquests || []);
     } catch (err) { setAiError(err.message); }
     finally {
       clearTimeout(timeoutId);

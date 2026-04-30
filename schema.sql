@@ -92,3 +92,13 @@ CREATE TABLE task_notes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (task_id, user_id)
 );
+
+-- AI Training Logs — Continuous Feedback Loop for fine-tuning
+CREATE TABLE ai_training_logs (
+    id                    SERIAL PRIMARY KEY,
+    instruction_type      VARCHAR(50) NOT NULL,
+    prompt_input          TEXT NOT NULL,
+    ai_output             TEXT NOT NULL,
+    user_corrected_output TEXT,
+    created_at            TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
