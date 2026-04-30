@@ -199,10 +199,15 @@ const streamChat = async (req, res) => {
     });
 
     let fullResponse = '';
+    let buffer = '';
 
     response.data.on('data', (chunk) => {
-      const lines = chunk.toString().split('\n').filter(line => line.trim() !== '');
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep the incomplete line in the buffer
+
       for (const line of lines) {
+        if (!line.trim()) continue;
         try {
           const parsed = JSON.parse(line);
           if (parsed.message?.content) {
@@ -210,7 +215,7 @@ const streamChat = async (req, res) => {
             res.write(`data: ${JSON.stringify({ content: parsed.message.content })}\n\n`);
           }
         } catch (e) {
-          // ignore JSON parse errors on partial chunks
+          // Ignore partial parse errors
         }
       }
     });
