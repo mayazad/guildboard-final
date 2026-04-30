@@ -9,6 +9,7 @@ const EVENT_CONFIG = {
   started:        { icon: Sword,    label: 'Adventure Begun',         color: 'text-rpg-accent', border: 'border-rpg-accent/50', bg: 'bg-rpg-accent/10' },
   submitted:      { icon: Shield,   label: 'Submitted to Council',    color: 'text-blue-400',   border: 'border-blue-400/50',   bg: 'bg-blue-400/10'   },
   pending_council:{ icon: Scale,    label: 'Awaiting Council Vote',   color: 'text-rpg-gold',   border: 'border-rpg-gold/50',   bg: 'bg-rpg-gold/10'   },
+  council_summary:{ icon: Sparkles, label: 'Dungeon Master Report',   color: 'text-rpg-gold',   border: 'border-rpg-gold/50',   bg: 'bg-rpg-gold/10'   },
   verified:       { icon: Trophy,   label: 'Legend Verified!',        color: 'text-green-400',  border: 'border-green-400/50',  bg: 'bg-green-400/10'  },
   rejected:       { icon: RefreshCw,label: 'Returned to the Forge',   color: 'text-orange-400', border: 'border-orange-400/50', bg: 'bg-orange-400/10' },
   returned:       { icon: RefreshCw,label: 'Returned to Assigned',    color: 'text-gray-400',   border: 'border-gray-400/50',   bg: 'bg-gray-400/10'   },

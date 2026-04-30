@@ -1,5 +1,6 @@
 const db    = require('../db');
 const axios = require('axios');
+const { generateCouncilSummary } = require('./aiController');
 
 // Discord notification helper — fire-and-forget
 const notifyDiscord = async (embed) => {
@@ -261,6 +262,18 @@ const reviewTask = async (req, res) => {
 
     // Log verification with XP details
     await logActivity(id, reviewer_id, 'verified', `Legend verified! +${finalXp} XP awarded to ${task.assigned_to}`);
+
+    // Fire-and-forget: AI Council Summary
+    const commentsText = approvals.map(r => r.comments).filter(Boolean).join(' | ');
+    if (commentsText) {
+      generateCouncilSummary(task.title, task.assignee_role, commentsText)
+        .then(async (summary) => {
+          if (summary) {
+            await logActivity(id, null, 'council_summary', summary);
+          }
+        })
+        .catch(console.error);
+    }
 
     res.json({ message: 'Task verified and XP awarded!', task: updatedTask.rows[0], awardedXp: finalXp, newTotalXp, newLevel });
   } catch (error) {

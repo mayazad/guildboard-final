@@ -118,4 +118,33 @@ const suggestXP = async (req, res) => {
   }
 };
 
-module.exports = { generateSubquests, suggestXP };
+/**
+ * Helper: Generate a Smart Review Summary when a task is verified.
+ * This is an internal function, not an Express route.
+ */
+const generateCouncilSummary = async (taskTitle, assigneeRole, reviewComments) => {
+  if (!process.env.OLLAMA_API_URL) return null;
+
+  try {
+    const apiClient = axios.create({
+      baseURL: process.env.OLLAMA_API_URL,
+      timeout: 300000,
+    });
+
+    const userPrompt = `Instruction: COUNCIL_REVIEW\nInput: Generate a cohesive, RPG-flavored Performance Report summarizing the council's feedback for this completed quest. Keep it under 3 sentences. Assignee Role: "${assigneeRole}". Quest: "${taskTitle}". Feedback: "${reviewComments}".`;
+
+    const payload = {
+      model: 'officialmayazad/sensei-mayaz-v1',
+      stream: false,
+      messages: [{ role: 'user', content: userPrompt }]
+    };
+
+    const response = await apiClient.post('/api/chat', payload);
+    return response.data.message.content.trim();
+  } catch (error) {
+    console.error('Error generating council summary:', error?.message || error);
+    return null;
+  }
+};
+
+module.exports = { generateSubquests, suggestXP, generateCouncilSummary };
