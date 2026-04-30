@@ -16,6 +16,7 @@ const GuildChat = ({ currentUser, guildName, bottomClass = 'bottom-6' }) => {
   const [input, setInput]       = useState('');
   const [sending, setSending]   = useState(false);
   const [unread, setUnread]     = useState(0);
+  const [streamingDM, setStreamingDM] = useState('');
   const bottomRef  = useRef(null);
   const pollRef    = useRef(null);
   const lastIdRef  = useRef(0);
@@ -49,7 +50,7 @@ const GuildChat = ({ currentUser, guildName, bottomClass = 'bottom-6' }) => {
   // Scroll to bottom when messages update and panel is open
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, open]);
+  }, [messages, open, streamingDM]);
 
   // Clear unread on open
   useEffect(() => {
@@ -59,17 +60,65 @@ const GuildChat = ({ currentUser, guildName, bottomClass = 'bottom-6' }) => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim() || sending) return;
+    const msgText = input.trim();
     setSending(true);
+    setInput('');
     try {
       const token = localStorage.getItem('token');
       await fetch(`${API_URL}/api/messages`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ content: input.trim() }),
+        body:    JSON.stringify({ content: msgText }),
       });
-      setInput('');
       fetchMessages();
-    } catch (e) { /* silent */ }
+
+      // Trigger DM Stream
+      if (msgText.includes('@DM')) {
+        setStreamingDM('...'); 
+        const response = await fetch(`${API_URL}/api/tasks/stream-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ message: msgText })
+        });
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let done = false;
+        let firstChunk = true;
+        
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+            for (const line of lines) {
+              const dataStr = line.replace('data: ', '').trim();
+              if (dataStr === '[DONE]') {
+                done = true;
+                break;
+              }
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.content) {
+                  if (firstChunk) {
+                    setStreamingDM(parsed.content);
+                    firstChunk = false;
+                  } else {
+                    setStreamingDM(prev => prev + parsed.content);
+                  }
+                }
+              } catch (e) { /* ignore parse errors */ }
+            }
+          }
+        }
+        
+        setTimeout(() => {
+          setStreamingDM('');
+          fetchMessages();
+        }, 1500);
+      }
+    } catch (e) { console.error('Chat error', e); }
     finally { setSending(false); }
   };
 
@@ -127,6 +176,17 @@ const GuildChat = ({ currentUser, guildName, bottomClass = 'bottom-6' }) => {
                   </div>
                 );
               })}
+              
+              {/* Streaming DM Message */}
+              {streamingDM && (
+                <div className="flex flex-col items-start">
+                  <span className="text-xs text-rpg-gold mb-1 ml-1 font-bold">Dungeon Master</span>
+                  <div className="max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-snug break-words bg-gray-800/80 text-gray-200 rounded-bl-sm border border-rpg-gold/50 shadow-[0_0_10px_rgba(250,204,21,0.2)]">
+                    {streamingDM}
+                  </div>
+                </div>
+              )}
+
               <div ref={bottomRef} />
             </div>
 

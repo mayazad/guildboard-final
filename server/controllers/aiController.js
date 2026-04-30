@@ -147,4 +147,96 @@ const generateCouncilSummary = async (taskTitle, assigneeRole, reviewComments) =
   }
 };
 
-module.exports = { generateSubquests, suggestXP, generateCouncilSummary };
+/**
+ * POST /api/tasks/stream-chat
+ * Body: { message: string }
+ * Stream: SSE
+ */
+const streamChat = async (req, res) => {
+  try {
+    const { guild_id } = req.user;
+
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders(); 
+
+    if (!process.env.OLLAMA_API_URL) {
+      res.write(`data: ${JSON.stringify({ content: 'AI Service is asleep.' })}\n\n`);
+      return res.end();
+    }
+
+    const db = require('../db');
+    const pastMessagesRes = await db.query(
+      `SELECT m.content, u.name 
+       FROM messages m JOIN users u ON m.user_id = u.id 
+       WHERE m.guild_id = $1 ORDER BY m.created_at DESC LIMIT 10`,
+      [guild_id]
+    );
+    const pastMessages = pastMessagesRes.rows.reverse().map(m => `${m.name}: ${m.content}`).join('\n');
+
+    const promptContext = `Instruction: INTERACTIVE_PROMPT\nInput: You are the Guild Dungeon Master. Answer the guild's questions in an RPG persona. \nRecent Chat Log:\n${pastMessages}\n\nProvide the next response as the Dungeon Master.`;
+
+    const payload = {
+      model: 'officialmayazad/sensei-mayaz-v1',
+      stream: true,
+      messages: [{ role: 'user', content: promptContext }]
+    };
+
+    const response = await axios({
+      method: 'post',
+      url: `${process.env.OLLAMA_API_URL}/api/chat`,
+      data: payload,
+      responseType: 'stream',
+      timeout: 300000
+    });
+
+    let fullResponse = '';
+
+    response.data.on('data', (chunk) => {
+      const lines = chunk.toString().split('\n').filter(line => line.trim() !== '');
+      for (const line of lines) {
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.message?.content) {
+            fullResponse += parsed.message.content;
+            res.write(`data: ${JSON.stringify({ content: parsed.message.content })}\n\n`);
+          }
+        } catch (e) {
+          // ignore JSON parse errors on partial chunks
+        }
+      }
+    });
+
+    response.data.on('end', async () => {
+      res.write('data: [DONE]\n\n');
+      res.end();
+      
+      // Save DM's final message to the database silently
+      try {
+        const dmRes = await db.query("SELECT id FROM users WHERE username = 'dungeon_master'");
+        if (dmRes.rows.length > 0) {
+          await db.query(
+            'INSERT INTO messages (guild_id, user_id, content) VALUES ($1, $2, $3)',
+            [guild_id, dmRes.rows[0].id, fullResponse.substring(0, 1000)]
+          );
+        }
+      } catch (err) {
+        console.error('Failed to save DM message:', err);
+      }
+    });
+
+    response.data.on('error', (err) => {
+      console.error('Stream stream error:', err);
+      res.end();
+    });
+
+  } catch (error) {
+    console.error('Streaming connection error:', error?.message);
+    res.write(`data: ${JSON.stringify({ content: '\n[The Dungeon Master is currently unreachable]' })}\n\n`);
+    res.end();
+  }
+};
+
+module.exports = { generateSubquests, suggestXP, generateCouncilSummary, streamChat };
