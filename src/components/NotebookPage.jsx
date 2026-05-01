@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ScrollText, Plus, Edit3, Eye, Trash2, Loader2, Check,
   ChevronRight, User, FileText, X, CheckSquare,
+  Bold, Italic, Heading, List, Code, Quote
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -127,11 +128,35 @@ const NotebookPage = () => {
       });
       if (res.ok) {
         const updated = await res.json();
-        setNotes((prev) => prev.map((n) => n.id === activeId ? { ...n, ...updated } : n));
+        // Crucial fix: Only update updated_at, NOT content/title.
+        // If we update content here, a slow network response will overwrite whatever the user just typed!
+        setNotes((prev) => prev.map((n) => n.id === activeId ? { ...n, updated_at: updated.updated_at } : n));
         setSavedAt(new Date());
       }
     } catch (e) { /* silent */ }
     finally { setSaving(false); }
+  };
+
+  // ── Markdown Formatting ────────────────────────────────────────────────────
+  const insertText = (before, after = '') => {
+    const textarea = document.getElementById('notebook-textarea');
+    if (!textarea || !activeId) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const val = textarea.value;
+    const selectedText = val.substring(start, end);
+    const newVal = val.substring(0, start) + before + selectedText + after + val.substring(end);
+    
+    setNotes((prev) => prev.map((n) => n.id === activeId ? { ...n, content: newVal } : n));
+    
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => saveNote({ content: newVal }), 900);
+    
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+    }, 0);
   };
 
   // ── Create note ────────────────────────────────────────────────────────────
@@ -326,13 +351,29 @@ const NotebookPage = () => {
                       <h1 className="text-xl font-bold text-gray-100">{activeNote.title || 'Untitled'}</h1>
                     )}
                   </div>
-                  <div className="flex-1 overflow-y-auto px-5 py-4">
+                  <div className="flex-1 flex flex-col px-5 py-4 overflow-hidden">
                     {isOwn && mode === 'edit' ? (
-                      <textarea value={activeNote.content} onChange={handleContentChange}
-                        placeholder={`Write your notes here in Markdown...\n\n# Header\n**Bold text**\n- List item\n\`\`\`code\`\`\``}
-                        className="w-full h-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm text-gray-200 placeholder-gray-600 leading-relaxed font-mono" />
+                      <div className="flex flex-col h-full bg-black/20 rounded-xl border border-gray-700/50 overflow-hidden">
+                        {/* Formatting Toolbar */}
+                        <div className="flex items-center gap-1.5 p-2 border-b border-gray-700/50 bg-black/30">
+                          <button onClick={() => insertText('**', '**')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Bold"><Bold size={14}/></button>
+                          <button onClick={() => insertText('_', '_')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Italic"><Italic size={14}/></button>
+                          <div className="w-px h-4 bg-gray-700 mx-1" />
+                          <button onClick={() => insertText('### ', '')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Heading"><Heading size={14}/></button>
+                          <button onClick={() => insertText('- ', '')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Bullet List"><List size={14}/></button>
+                          <button onClick={() => insertText('> ', '')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Quote"><Quote size={14}/></button>
+                          <button onClick={() => insertText('```\n', '\n```')} className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Code Block"><Code size={14}/></button>
+                        </div>
+                        <textarea
+                          id="notebook-textarea"
+                          value={activeNote.content}
+                          onChange={handleContentChange}
+                          placeholder="Write your notes here in Markdown..."
+                          className="w-full flex-1 bg-transparent border-none outline-none resize-none p-4 text-sm text-gray-200 placeholder-gray-600 leading-relaxed font-mono"
+                        />
+                      </div>
                     ) : (
-                      <div>
+                      <div className="overflow-y-auto h-full">
                         {activeNote.content?.trim() ? (
                           <ReactMarkdown className="prose prose-invert prose-sm max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-gray-700/50 prose-a:text-rpg-accent prose-headings:text-gray-100 prose-strong:text-gray-200" remarkPlugins={[remarkGfm]}>
                             {activeNote.content}

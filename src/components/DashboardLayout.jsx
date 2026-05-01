@@ -91,29 +91,30 @@ const DashboardLayout = () => {
               { to: '/quest-log', icon: BookOpen,        label: 'Quest Log'  },
               { to: '/notebook',  icon: ScrollText,      label: 'Notebook'   },
             ];
-            const activeIdx = NAV.findIndex(n => n.to === location.pathname);
             return (
-              <div className="hidden sm:flex items-center relative bg-black/30 rounded-xl border border-gray-800 p-1 gap-0">
-                {/* Sliding background pill */}
-                {activeIdx >= 0 && (
-                  <motion.div
-                    className="absolute top-1 bottom-1 rounded-lg bg-white/10 border border-white/10"
-                    layoutId="nav-active-pill"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                    style={{ left: `calc(${activeIdx} * (100% / ${NAV.length}) + 4px)`, width: `calc(100% / ${NAV.length} - 8px)` }}
-                  />
-                )}
-                {NAV.map(({ to, icon: Icon, label }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className={`relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg ${
-                      isActive(to) ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-                    }`}
-                  >
-                    <Icon size={14} /> {label}
-                  </Link>
-                ))}
+              <div className="hidden sm:flex items-center relative bg-black/30 rounded-xl border border-gray-800 p-1 gap-1">
+                {NAV.map(({ to, icon: Icon, label }) => {
+                  const active = isActive(to);
+                  return (
+                    <Link
+                      key={to}
+                      to={to}
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors rounded-lg ${
+                        active ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                      }`}
+                    >
+                      {active && (
+                        <motion.div
+                          layoutId="nav-active-pill"
+                          className="absolute inset-0 bg-white/10 border border-white/10 rounded-lg"
+                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                        />
+                      )}
+                      <Icon size={14} className="relative z-10" />
+                      <span className="relative z-10">{label}</span>
+                    </Link>
+                  );
+                })}
               </div>
             );
           })()}
