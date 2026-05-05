@@ -375,7 +375,30 @@ const NotebookPage = () => {
                     ) : (
                       <div className="overflow-y-auto h-full">
                         {activeNote.content?.trim() ? (
-                          <ReactMarkdown className="prose prose-invert prose-sm max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-gray-700/50 prose-a:text-rpg-accent prose-headings:text-gray-100 prose-strong:text-gray-200" remarkPlugins={[remarkGfm]}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-gray-100 mt-6 mb-3 pb-2 border-b border-gray-700/50" {...props} />,
+                              h2: ({node, ...props}) => <h2 className="text-xl font-bold text-gray-100 mt-5 mb-2.5" {...props} />,
+                              h3: ({node, ...props}) => <h3 className="text-lg font-semibold text-gray-200 mt-4 mb-2" {...props} />,
+                              p:  ({node, ...props}) => <p className="text-sm text-gray-300 leading-relaxed mb-3" {...props} />,
+                              strong: ({node, ...props}) => <strong className="font-bold text-gray-100" {...props} />,
+                              em: ({node, ...props}) => <em className="italic text-gray-300" {...props} />,
+                              ul: ({node, ...props}) => <ul className="list-disc list-inside mb-3 space-y-1 text-sm text-gray-300 pl-2" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-3 space-y-1 text-sm text-gray-300 pl-2" {...props} />,
+                              li: ({node, ...props}) => <li className="text-gray-300 text-sm" {...props} />,
+                              blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-rpg-accent/50 pl-4 py-1 my-3 bg-white/5 rounded-r-lg text-gray-400 italic text-sm" {...props} />,
+                              code: ({node, inline, ...props}) => inline
+                                ? <code className="bg-black/50 text-rpg-accent text-xs font-mono px-1.5 py-0.5 rounded border border-gray-700/50" {...props} />
+                                : <code className="block" {...props} />,
+                              pre: ({node, ...props}) => <pre className="bg-black/50 border border-gray-700/50 rounded-xl p-4 overflow-x-auto mb-3 text-xs font-mono text-gray-300 leading-relaxed" {...props} />,
+                              a: ({node, ...props}) => <a className="text-rpg-accent underline hover:text-rpg-accent/80 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                              hr: ({node, ...props}) => <hr className="border-gray-700/50 my-4" {...props} />,
+                              table: ({node, ...props}) => <div className="overflow-x-auto mb-3"><table className="w-full text-sm border-collapse" {...props} /></div>,
+                              th: ({node, ...props}) => <th className="border border-gray-700/50 px-3 py-2 text-left font-semibold text-gray-200 bg-white/5" {...props} />,
+                              td: ({node, ...props}) => <td className="border border-gray-700/50 px-3 py-2 text-gray-300" {...props} />,
+                            }}
+                          >
                             {activeNote.content}
                           </ReactMarkdown>
                         ) : (
